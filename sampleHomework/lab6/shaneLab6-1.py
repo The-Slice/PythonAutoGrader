@@ -15,9 +15,8 @@ def repeatRecur(string, finalString, numberOfRepeats, x):
     if x == numberOfRepeats:
         return "'" + finalString + "'"
     else:
-        finalString = string + finalString
-        x = x + 1
-        return repeatRecur(string, finalString, numberOfRepeats, x)
+        finalString = finalString + string
+        return repeatRecur(string, finalString, numberOfRepeats, x+1)
 
 print(repeat("hi", 3))
 print(repeat("don't print me ", 0))
@@ -36,10 +35,8 @@ def multiplyEvensRecur(x,y,counter,product):
     if counter == x:
         return product
     else:
-        counter = counter + 1
         y = y + 2
-        product = product * y
-        return multiplyEvensRecur(x,y,counter,product)
+        return multiplyEvensRecur(x,y,counter+1,product*y)
 
 print(multiplyEvens(1))
 print(multiplyEvens(2))
