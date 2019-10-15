@@ -1,7 +1,11 @@
 import sys
+import re
+import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from zipfile import ZipFile
+
 
 class App(QWidget):
 
@@ -23,6 +27,8 @@ class App(QWidget):
         button2 = QPushButton('samplebutton dos', self)
         button3 = QPushButton('Select Homework Zip(s)', self)
         button4 = QPushButton('Select Homework Directory', self)
+		
+        button5 = QPushButton('Grade', self)
         
         button1.setToolTip('This is an example button')
         button1.move(100, 100)
@@ -39,22 +45,41 @@ class App(QWidget):
         button4.setToolTip('Select Homework Directory')
         button4.move(200,10)
         button4.clicked.connect(self.dirdialog_on_click)
+
+        button5.setToolTip('Grade')
+        button5.move(200,10)
+        button5.clicked.connect(self.grade_assignments)
         
         self.show()
 
+
+    #opens directory filled with students zipped assignments
     def openDirectory(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
         if fileName:
             print(fileName)
-    
+			
+    #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z)", options=options)
-        if files:
-            print(files)
+        for file in files:
+            zipfileName = re.search('[^/]+$', file)
+
+            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                zippedObject.extractall('temp')
+            
+            #for fileName in os.listdir('temp'):
+                #print(fileName)
+                #with ZipFile(fileName , 'r') as zippedObject:
+                    #zippedObject.extractall('studentWork')
+                
+			
+    def grade_assignments(self):
+	    var = 0
 
     def center(self):
         qtRectangle = self.frameGeometry()
