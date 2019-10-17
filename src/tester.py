@@ -37,10 +37,13 @@ class Tester():
         unittest.TextTestRunner(stream=self.out_capture).run(dynamic_test)
 
 if __name__=="__main__":
-    args=sys.argv[1:]
     try:
+        args=sys.argv[1:]
         tester1 = Tester(str(args[0]))
         tester1.analyze_dynamically()
         print(tester1.out_capture.read())
     except:
+        if len(args) < 1:
+            print("No arguments provided")
+            sys.exit(1)
         print("Could not locate script:", str(args[0]))
