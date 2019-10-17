@@ -1,7 +1,6 @@
 import sys
 import ctypes
-import sre_constants
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QPlainTextEdit, QSizePolicy
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from zipfile import ZipFile
@@ -35,7 +34,7 @@ class App(QWidget):
 		
         button5 = QPushButton('Grade', self)
 		
-		resultArea = QPlainTextEdit(self)
+        resultArea = QPlainTextEdit(self)
 
         # button 1
         button1.setToolTip('This is an example button')
