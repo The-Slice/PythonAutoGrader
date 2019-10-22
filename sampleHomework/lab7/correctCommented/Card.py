@@ -2,9 +2,9 @@ import random
 '''This class represents a Playing card'''
 class PlayingCard:
     def __init__(self, rank="queen", suit="hearts"):
-        '''Creates a representation of a card - rank and suit'''
+        """Creates a representation of a card - rank and suit"""
         self._rank = rank
-        self._suit = suit
+        self._suit = suit   #This is an inline comment
 
     def setRank(self, rank):
         '''sets the rank of the card'''

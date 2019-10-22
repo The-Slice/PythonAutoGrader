@@ -1,6 +1,4 @@
-import sys
 import random
-import math
 
 #rabbit class 
 class Rabbit:
