@@ -6,7 +6,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from zipfile import ZipFile
 
-
 class App(QWidget):
 
     def __init__(self):
@@ -46,15 +45,12 @@ class App(QWidget):
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z) ;; .dir (*.dir *.FOLDER", options=options)
         for file in files:
-            zipfileName = re.search('[^/]+$', file)
 
-            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
-                zippedObject.extractall('temp')
+            zipfileName = re.search('[^/]+$', file)
+            zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
             
-            #for fileName in os.listdir('temp'):
-                #print(fileName)
-                #with ZipFile(fileName , 'r') as zippedObject:
-                    #zippedObject.extractall('studentWork')
+            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                zippedObject.extractall(zipfileNameParse)
                 
     def center(self):
         qtRectangle = self.frameGeometry()
