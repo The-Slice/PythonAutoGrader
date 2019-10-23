@@ -22,11 +22,15 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         
-        button3 = QPushButton('Select Homework Zip(s)', self)
+        button =  QPushButton('Select Homework Directory', self)
+        button2 = QPushButton('Select Homework Zip(s)', self)
         	
-        button3.setToolTip('Select Homework Zip(s)')
-        button3.move(200,40)
-        button3.clicked.connect(self.zipdialog_on_click)
+        button.setToolTip('Select Homework Directory')
+        button.move(200,10)
+        button.clicked.connect(self.zipdirectory_on_click)    
+        button2.setToolTip('Select Homework Zip(s)')
+        button2.move(200,60)
+        button2.clicked.connect(self.zipdialog_on_click)
         
         self.show()
 
@@ -35,9 +39,19 @@ class App(QWidget):
     def openDirectory(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
+        options |= QFileDialog.ShowDirsOnly
         fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-        if fileName:
-            print(fileName)
+        
+        for subdir, dirs, files in os.walk(fileName):
+            for file in files:
+                if(file.find('.zip') != -1):
+
+                    zipfileName = re.search('[^/]+$', file)
+                    zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                    
+                    with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                        zippedObject.extractall(zipfileNameParse)
+                    
 			
     #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
@@ -61,6 +75,11 @@ class App(QWidget):
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
+
+    @pyqtSlot()
+    def zipdirectory_on_click(self):
+        self.openDirectory()
+    
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
