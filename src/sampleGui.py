@@ -64,7 +64,7 @@ class App(QWidget):
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z) ;; .dir (*.dir *.FOLDER", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z)", options=options)
         for file in files:
 
             zipfileName = re.search('[^/]+$', file)
