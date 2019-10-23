@@ -1,21 +1,28 @@
 import sys
 import re
+import ctypes
 import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from zipfile import ZipFile
+BORDERSIZE = 10
 
 class App(QWidget):
 
     def __init__(self):
+        user32 = ctypes.windll.user32
+        screenWidth = user32.GetSystemMetrics(0)
+        screenHeight = user32.GetSystemMetrics(1)
         super().__init__()
-        self.title = 'Auto_Grader'
-        self.left = 10
-        self.top = 10
-        self.width = 350
-        self.height = 300
+        self.title = 'Python Auto Grader'
+        self.width = screenWidth / 2
+        self.height = screenHeight / 2
+        self.left = screenWidth / 2 - self.width / 2
+        self.top = screenHeight / 2 - self.height / 2
+
         self.initUI()
+
     
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -26,10 +33,10 @@ class App(QWidget):
         button2 = QPushButton('Select Homework Zip(s)', self)
         	
         button.setToolTip('Select Homework Directory')
-        button.move(200,10)
+        button.move(10,10)
         button.clicked.connect(self.zipdirectory_on_click)    
         button2.setToolTip('Select Homework Zip(s)')
-        button2.move(200,60)
+        button2.move(10,60)
         button2.clicked.connect(self.zipdialog_on_click)
         
         self.show()
