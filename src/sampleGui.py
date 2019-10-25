@@ -2,6 +2,7 @@ import sys
 import re
 import ctypes
 import os
+import shutil
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -55,6 +56,8 @@ class App(QWidget):
 
                     zipfileName = re.search('[^/]+$', file)
                     zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+					
+                    
                     
                     with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
                         zippedObject.extractall(zipfileNameParse)
@@ -65,13 +68,36 @@ class App(QWidget):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z)", options=options)
+        
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+		
+        try:
+            os.mkdir("temp")
+        except FileExistsError:
+            try:
+                shutil.rmtree("temp")
+                os.mkdir("temp")
+            except PermissionError:
+                print("temp folder is in use")
+                return 
+				
+		#for each zip folder unzip the folder
         for file in files:
 
             zipfileName = re.search('[^/]+$', file)
             zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+			
+            print("file name parse: " + zipfileNameParse)
             
             with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
                 zippedObject.extractall(zipfileNameParse)
+			
+			#file is moved to temp once zip file is extracted into its own filename			
+            os.rename(zipfileNameParse, "temp\\" + zipfileNameParse)        
+				
+        
                 
     def center(self):
         qtRectangle = self.frameGeometry()
