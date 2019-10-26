@@ -45,29 +45,47 @@ class App(QWidget):
 
     #opens directory filled with students zipped assignments
     def openDirectory(self):
+	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        options |= QFileDialog.ShowDirsOnly
         fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-        
+		
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+		
+        try:
+            os.mkdir("temp")
+        except FileExistsError:
+            try:
+                shutil.rmtree("temp")
+                os.mkdir("temp")
+            except PermissionError:
+                print("temp folder is in use")
+                QMessageBox.about(self , "Attention" , "unzip failed") 
+                return 
+	
+	    
+	    #for each zip folder unzip the folder
         for subdir, dirs, files in os.walk(fileName):
             for file in files:
                 if(file.find('.zip') != -1):
 
                     zipfileName = re.search('[^/]+$', file)
                     zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-					
-                    
                     
                     with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
                         zippedObject.extractall(zipfileNameParse)
+						
+					#file is moved to temp once zip file is extracted into its own filename			
+                    os.rename(zipfileNameParse, "temp\\" + zipfileNameParse) 
                     
 			
     #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","All Files (*)", options=options)
         
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
@@ -81,6 +99,7 @@ class App(QWidget):
                 os.mkdir("temp")
             except PermissionError:
                 print("temp folder is in use")
+                QMessageBox.about(self , "Attention" , "unzip failed") 
                 return 
 				
 		#for each zip folder unzip the folder
@@ -88,8 +107,6 @@ class App(QWidget):
 
             zipfileName = re.search('[^/]+$', file)
             zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-			
-            print("file name parse: " + zipfileNameParse)
             
             with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
                 zippedObject.extractall(zipfileNameParse)
