@@ -1,17 +1,17 @@
-import sys
-import re
 import ctypes
 import os
+import re
 import shutil
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+import sys
 from zipfile import ZipFile
-BORDERSIZE = 10
 
-class App(QWidget):
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
-    def __init__(self):
+class App(QMainWindow):
+
+    def __init__(self, parent=None):
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
         screenHeight = user32.GetSystemMetrics(1)
@@ -29,17 +29,29 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
-        
-        button =  QPushButton('Select Homework Directory', self)
-        button2 = QPushButton('Select Homework Zip(s)', self)
-        	
-        button.setToolTip('Select Homework Directory')
-        button.move(10,10)
-        button.clicked.connect(self.zipdirectory_on_click)    
-        button2.setToolTip('Select Homework Zip(s)')
-        button2.move(10,60)
-        button2.clicked.connect(self.zipdialog_on_click)
-        
+    
+        exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.setStatusTip('Exit application')
+        exitAct.triggered.connect(qApp.quit)
+
+        openFile = QAction(QIcon('exit.png'), '&Open Zip(s)', self)        
+        openFile.setShortcut('Ctrl+O')
+        openFile.setStatusTip('Open Zip(s)')
+        openFile.triggered.connect(self.zipdialog_on_click)
+
+        openDir = QAction(QIcon('exit.png'), '&Open Directory', self)        
+        openDir.setShortcut('Ctrl+D')
+        openDir.setStatusTip('Open Directory')
+        openDir.triggered.connect(self.zipdialog_on_click)
+
+
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(openDir)
+        fileMenu.addAction(openFile)
+        fileMenu.addAction(exitAct)
+
         self.show()
 
 
@@ -85,7 +97,7 @@ class App(QWidget):
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","All Files (*)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","Zip Files (*.zip *.7zip)", options=options)
         
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
