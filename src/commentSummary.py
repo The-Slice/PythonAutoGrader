@@ -1,8 +1,11 @@
 def main():
     comment_summary_docstrings("../sampleHomework/lab7/correctCommented/Card.py")
 
-    numOfComments = inlineCommentCounter("../sampleHomework/lab7/correctCommented/Card.py")
-    print("Number of comments: {}".format(str(numOfComments)) )
+    comments = inlineCommentCounter("../sampleHomework/lab4/activityOne.py")
+    print("Number of comments: {}".format(str(len(comments))))
+    print("Comments: ")
+    for comment in comments:
+        print("\t {}".format(comment))
 
 def comment_summary_docstrings(path):
     ''' This method performs a comment summary for all docstring comments in a file.
@@ -73,13 +76,16 @@ def display_docstrings(docStrings):
         print("    -> " + docStrings[i])
 
 def inlineCommentCounter(fileName):
+    comments = []
     commentCount = 0
     for line in open(fileName):
         li = line.strip()
         if li.startswith("#"):
             commentCount += 1
+            comments.append(li)
         else:
             isComment = False
+            count = 0
             for letter in li:
                 if letter == '\"' and isComment == False:
                     isComment = True
@@ -87,6 +93,10 @@ def inlineCommentCounter(fileName):
                     isComment = False
                 if letter == '#' and isComment == False:
                     commentCount += 1
-    return commentCount
+                    word = li[count:len(li)]
+                    comments.append(word)
+                    count = 0
+                count+=1
+    return comments
 
 main()
