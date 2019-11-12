@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 import sys
-
+from zipfile import ZipFile
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -29,6 +29,8 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
+
+        resultArea = QPlainTextEdit(self)
         
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
