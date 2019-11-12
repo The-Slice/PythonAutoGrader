@@ -1,9 +1,12 @@
 import sys
 import ctypes
+import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from guiutil import *
 from zipfile import ZipFile
+from commentSummary import CommentSummary
 BORDERSIZE = 10
 
 
@@ -19,6 +22,16 @@ class App(QWidget):
         self.height = screenHeight / 2
         self.left = screenWidth / 2 - self.width / 2
         self.top = screenHeight / 2 - self.height / 2
+        self.testSuiteDict = {
+            'Comment Analysis': False,
+            'Dynamic Analysis': False
+        }
+
+        self.testSuiteRun = { # This dictionary assigns the string ID of the test to the constructor
+            'Comment Analysis': CommentSummary
+        }
+
+        self.toBeGraded = []
 
         self.initUI()
 
@@ -27,8 +40,20 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         # elements
-        button1 = QPushButton('samplebutton uno', self)
-        button2 = QPushButton('samplebutton dos', self)
+        #button1 = QCheckBox('Comment Analysis', self)
+        #self.button1 = TestConfigOption(
+        #    'Comment Analysis', BORDERSIZE, 
+        #    BORDERSIZE, self, 
+        #    {"opt1": False, "opt2": False}
+        #)
+        self.optionBoxes = TestConfigOptionBox(BORDERSIZE, BORDERSIZE, self)
+        self.optionBoxes.add('Comment Analysis', {'1': False, '2': False})
+        self.optionBoxes.add('Dynamic Analysis', {'1': False, '2': False})
+        for opt in self.optionBoxes.children:
+            opt.dropdown.clicked.connect(opt.getExpandListener())
+        #toggle_button1 = QToolButton(self, checkable=True, checked=False)
+        #toggle_button1.setArrowType(Qt.RightArrow)
+        #button2 = QCheckBox('Dynamic Analysis', self)
         button3 = QPushButton('Select Homework Zip(s)', self)
         button4 = QPushButton('Select Homework Directory', self)
 		
@@ -37,16 +62,18 @@ class App(QWidget):
         resultArea = QPlainTextEdit(self)
 
         # button 1
-        button1.setToolTip('This is an example button')
-        button1.move(BORDERSIZE, BORDERSIZE)
-        button1.clicked.connect(self.uno_on_click)
-
+        #self.button1.dropdown.clicked.connect(self.comment_config_dropdown)
+        #button1.setToolTip('This is an example button')
+        #button1.move(BORDERSIZE, BORDERSIZE)
+        #button1.clicked.connect(self.comment_on_click)
+        #toggle_button1.move(BORDERSIZE + 130, BORDERSIZE)
+        #Stoggle_button1.clicked.connect()
         # button 2
-        button2.setToolTip('This is an example button')
-        button2.move(BORDERSIZE, button1.height()+BORDERSIZE+3)
-        button2.clicked.connect(self.dos_on_click)	
+        #button2.setToolTip('This is an example button')
+        #button2.move(BORDERSIZE, button1.height()+BORDERSIZE+3)
+        #button2.clicked.connect(self.dynamic_on_click)	
 
-        button3.setToolTip('Select Homework Zip(s)')
+        #Sbutton3.setToolTip('Select Homework Zip(s)')
         button3.move(200,40)
         button3.clicked.connect(self.zipdialog_on_click)
 
@@ -70,14 +97,18 @@ class App(QWidget):
         resultArea.setReadOnly(True)
         self.show()
 
+    def setListener(self, button, function):
+        button.clicked.connect(function)
 
     #opens directory filled with students zipped assignments
     def openDirectory(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-        if fileName:
-            print(fileName)
+        dirPath = QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
+        if dirPath:
+            for fileName in os.listdir(dirPath):
+                print(dirPath + fileName)
+                self.toBeGraded.append(dirPath + fileName)
 			
     #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
@@ -97,7 +128,12 @@ class App(QWidget):
                 
 			
     def grade_assignments(self):
-	    var = 0
+    	for key in self.testSuiteDict:
+            for assignment in self.toBeGraded:
+                if self.testSuiteDict[key]:
+                    test = self.testSuiteRun[key](assignment)
+                    test.run()
+
 
     def center(self):
         qtRectangle = self.frameGeometry()
@@ -114,12 +150,19 @@ class App(QWidget):
         self.openDirectory() 
         
     @pyqtSlot()
-    def uno_on_click(self):
-        print('button 1 click')
+    def comment_on_click(self):
+        self.testSuiteDict['Comment Analysis'] = not self.testSuiteDict['Comment Analysis']
+        print(self.testSuiteDict)
+    
+    @pyqtSlot()
+    def comment_config_dropdown(self):
+        self.button1.display_opts()
+        
 
     @pyqtSlot()
-    def dos_on_click(self):
-        print('button 2 click')
+    def dynamic_on_click(self):
+        self.testSuiteDict['Dynamic Analysis'] = not self.testSuiteDict['Dynamic Analysis']
+        print(self.testSuiteDict)
 
 
 if __name__ == '__main__':

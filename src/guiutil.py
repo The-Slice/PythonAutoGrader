@@ -1,0 +1,111 @@
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from functools import partial
+
+class TestConfigOptionBox:
+    def __init__(self, xloc, yloc, parent):
+        self.x = xloc
+        self.y = yloc
+        self.lowerBound = yloc
+        self.parent = parent
+        self.children = []
+        self.collapsed = []
+    
+    def add(self, name, opts=None):
+        self.children.append(TestConfigOption(name, self.x, self.lowerBound, self.parent, opts=opts, opsbox=self))
+        self.collapsed.append(self.children[-1].collapsed)
+        self.lowerBound = self.children[-1].y + 20
+        print(self.lowerBound)
+    
+    def reshape(self):
+        for num, opt in enumerate(self.children):
+            if self.collapsed[num] != opt.collapsed and num < len(self.children) - 1:
+                self.collapsed[num] = opt.collapsed
+                low = self.children[num].y
+                if opt.collapsed:
+                    self.children[num + 1].shiftUp(low + 20)
+                else:
+                    self.children[num + 1].shiftDown(low + 20)
+
+
+class TestConfigOption:
+    def __init__(self, name, xloc, yloc, parent, opts=None, opsbox=None):
+        if opsbox is not None:
+            self.inBox = True
+            self.opsbox = opsbox
+        
+        self.ybound = yloc
+        self.tempbuttons = []
+        self.collapsed = True
+        self.parent = parent
+        self.testCheck = QCheckBox(name, parent)
+        self.x = xloc
+        self.y = yloc
+        self.dropdown = QToolButton(parent, checkable=True, checked=False)
+        if opts is None:
+            self.options = {}
+        else:
+            self.options = opts
+
+        self.testCheck.move(xloc, yloc)
+        self.dropdown.move(xloc + 140, yloc)
+        self.dropdown.setArrowType(Qt.LeftArrow)
+        self.dropdown.setIconSize(QSize(15, 15))
+        self.parent.setListener(self.dropdown, self.getExpandListener)
+    
+    def shiftDown(self, y):
+        self.y = y
+        self.testCheck.move(self.x, y)
+        self.dropdown.move(self.x + 140, y)
+        for temp in self.tempbuttons:
+            self.y += 17
+            temp.move(self.x + 10, self.y)
+    
+    def shiftUp(self, y):
+        self.y = y
+        self.testCheck.move(self.x, y)
+        self.dropdown.move(self.x + 140, y)
+        for temp in self.tempbuttons:
+            self.y += 17
+            temp.move(self.x + 10, self.y)
+
+
+    def display_opts(self):
+        print(self.y)
+        if self.collapsed:
+            self.dropdown.setArrowType(Qt.DownArrow)
+            for num, option in enumerate(self.options):
+                self.y += 17
+                temp = QCheckBox(option, self.parent)
+                if self.options[option]:
+                    temp.setChecked(True)
+                temp.move (self.x + 10, self.y)
+                temp.show()
+                self.parent.setListener(temp, partial(self.toggleOpts, option))
+                self.tempbuttons.append(temp)
+                print(len(self.options))
+            self.parent.show()
+            self.collapsed = False
+        else:
+            self.collapsed = True
+            self.dropdown.setArrowType(Qt.LeftArrow)
+            while len(self.tempbuttons):
+                button = self.tempbuttons.pop()
+                button.hide()
+                self.y -= 17
+        self.opsbox.reshape()
+
+    def toggleOpts(self, name):
+        self.options[name] = not self.options[name]
+        print(self.options)
+
+    def getExpandListener(self):
+        return self.display_opts
+
+    def getOptions(self):
+        opts = []
+        for option in self.options:
+            opts.append(option)
+        return options
+
