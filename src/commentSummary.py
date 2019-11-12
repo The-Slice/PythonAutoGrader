@@ -1,16 +1,19 @@
 class CommentSummary:
 
-    def __init__(self, filename):
+    def __init__(self, filename, opts):
         self.fileName = filename
+        self.opts = opts
 
     def run(self):
-        self.comment_summary_docstrings(self.fileName)
-
+        if self.opts['Display Docstring']:
+            self.comment_summary_docstrings(self.fileName)
         comments = self.inlineCommentCounter(self.fileName)
-        print("Number of comments: {}".format(str(len(comments))))
-        print("Comments: ")
-        for comment in comments:
-            print("\t {}".format(comment))
+        if self.opts['Count Comments']:
+            print("Number of comments: {}".format(str(len(comments))))
+            print("Comments: ")
+        if self.opts['Display Comments']:
+            for comment in comments:
+                print("\t {}".format(comment))
 
     def comment_summary_docstrings(self, path):
         ''' This method performs a comment summary for all docstring comments in a file.
@@ -32,7 +35,7 @@ class CommentSummary:
         Returns:
             docStrings (list) : A list containing the content of each docString comment
         '''
-        file = open(path)
+        file = open(path, encoding="utf-8")
         text = file.read()
         #print(text)
 
@@ -83,7 +86,7 @@ class CommentSummary:
     def inlineCommentCounter(self, fileName):
         comments = []
         commentCount = 0
-        for line in open(fileName):
+        for line in open(fileName, encoding='utf-8'):
             li = line.strip()
             if li.startswith("#"):
                 commentCount += 1

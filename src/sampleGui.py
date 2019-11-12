@@ -23,7 +23,7 @@ class App(QWidget):
         self.left = screenWidth / 2 - self.width / 2
         self.top = screenHeight / 2 - self.height / 2
         self.testSuiteDict = {
-            'Comment Analysis': False,
+            'Comment Analysis': True,
             'Dynamic Analysis': False
         }
 
@@ -40,14 +40,14 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         # elements
-        #button1 = QCheckBox('Comment Analysis', self)
-        #self.button1 = TestConfigOption(
-        #    'Comment Analysis', BORDERSIZE, 
-        #    BORDERSIZE, self, 
-        #    {"opt1": False, "opt2": False}
-        #)
         self.optionBoxes = TestConfigOptionBox(BORDERSIZE, BORDERSIZE, self)
-        self.optionBoxes.add('Comment Analysis', {'1': False, '2': False})
+        self.optionBoxes.add('Comment Analysis', 
+            {
+            'Display Docstring': True, 
+            'Count Comments': False,
+            'Display Comments': True 
+            }
+        )
         self.optionBoxes.add('Dynamic Analysis', {'1': False, '2': False})
         for opt in self.optionBoxes.children:
             opt.dropdown.clicked.connect(opt.getExpandListener())
@@ -108,7 +108,7 @@ class App(QWidget):
         if dirPath:
             for fileName in os.listdir(dirPath):
                 print(dirPath + fileName)
-                self.toBeGraded.append(dirPath + fileName)
+                self.toBeGraded.append(dirPath + '/' + fileName)
 			
     #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
@@ -128,10 +128,11 @@ class App(QWidget):
                 
 			
     def grade_assignments(self):
-    	for key in self.testSuiteDict:
-            for assignment in self.toBeGraded:
+        for assignment in self.toBeGraded:
+            for key in self.testSuiteDict:
                 if self.testSuiteDict[key]:
-                    test = self.testSuiteRun[key](assignment)
+                    test = self.testSuiteRun[key](assignment, self.optionBoxes.getTestOptions(key))
+                    print(test)
                     test.run()
 
 
@@ -150,19 +151,9 @@ class App(QWidget):
         self.openDirectory() 
         
     @pyqtSlot()
-    def comment_on_click(self):
-        self.testSuiteDict['Comment Analysis'] = not self.testSuiteDict['Comment Analysis']
-        print(self.testSuiteDict)
-    
-    @pyqtSlot()
     def comment_config_dropdown(self):
         self.button1.display_opts()
         
-
-    @pyqtSlot()
-    def dynamic_on_click(self):
-        self.testSuiteDict['Dynamic Analysis'] = not self.testSuiteDict['Dynamic Analysis']
-        print(self.testSuiteDict)
 
 
 if __name__ == '__main__':

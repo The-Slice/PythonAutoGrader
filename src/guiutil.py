@@ -10,13 +10,23 @@ class TestConfigOptionBox:
         self.lowerBound = yloc
         self.parent = parent
         self.children = []
+        self.testdict = {}
         self.collapsed = []
-    
+
     def add(self, name, opts=None):
         self.children.append(TestConfigOption(name, self.x, self.lowerBound, self.parent, opts=opts, opsbox=self))
         self.collapsed.append(self.children[-1].collapsed)
         self.lowerBound = self.children[-1].y + 20
-        print(self.lowerBound)
+        self.testdict[name] = [False, self.children[-1]]
+        self.parent.setListener(self.testdict[name][1].testCheck, partial(self.toggleTest, name))
+
+    def toggleTest(self, name):
+        print(name, " is now ", not self.testdict[name][0])
+        self.testdict[name][0] = not self.testdict[name][0]
+
+    def getTestOptions(self, key):
+        print("Config: ",self.testdict[key][1].getConfig())
+        return self.testdict[key][1].getConfig()
     
     def reshape(self):
         for num, opt in enumerate(self.children):
@@ -54,6 +64,9 @@ class TestConfigOption:
         self.dropdown.setIconSize(QSize(15, 15))
         self.parent.setListener(self.dropdown, self.getExpandListener)
     
+    def getConfig(self):
+        return self.options
+
     def shiftDown(self, y):
         self.y = y
         self.testCheck.move(self.x, y)
@@ -98,7 +111,6 @@ class TestConfigOption:
 
     def toggleOpts(self, name):
         self.options[name] = not self.options[name]
-        print(self.options)
 
     def getExpandListener(self):
         return self.display_opts
