@@ -102,7 +102,7 @@ class App(QMainWindow):
                         zippedObject.extractall(zipfileNameParse)
 						
 					#file is moved to temp once zip file is extracted into its own filename			
-                    os.rename(zipfileNameParse, "temp\\" + zipfileNameParse) 
+                    os.rename(zipfileNameParse, "studentWork\\" + zipfileNameParse) 
                     
 			
     #opens zipped directory filled with students zipped assignments
@@ -136,7 +136,7 @@ class App(QMainWindow):
                 zippedObject.extractall(zipfileNameParse)
 			
 			#file is moved to temp once zip file is extracted into its own filename			
-            os.rename(zipfileNameParse, "temp\\" + zipfileNameParse)        
+            os.rename(zipfileNameParse, "studentWork\\" + zipfileNameParse)        
 				
         
                 
