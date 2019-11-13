@@ -45,7 +45,7 @@ class App(QMainWindow):
         openDir = QAction(QIcon('exit.png'), '&Open Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
-        openDir.triggered.connect(self.zipdialog_on_click)
+        openDir.triggered.connect(self.zipdirectory_on_click)
 
 
         menubar = self.menuBar()
@@ -69,8 +69,8 @@ class App(QMainWindow):
 
     #opens directory filled with students zipped assignments
     def openDirectory(self):
-	
-        options = QFileDialog.Options()
+        
+        options =  QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
 		
