@@ -5,15 +5,23 @@ This module contains the necessary routines to perform analysis of a single-scri
 from importlib import import_module, invalidate_caches, reload
 import os
 import sys
+"""
 if(os.path.exists("dynamic_analysis.py")):
     os.remove("dynamic_analysis.py")
 with open("dynamic_analysis.py", "w+") as f:
     f.write("pass")
+"""
 import dynamic_analysis
 import unittest
 import tempfile
 import re
+import editor
+import inspect
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+import imp
 from string import Template
+
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
@@ -59,24 +67,37 @@ class Tester():
         dynamic_analysis_template = Template(open("dynamic_analysis_template.py", "r").read())          # load the generic unit test suite template
         self.method_defs = find_method_defs(self.grading_key)                                           # get all method defs from grading key
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
-        dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key, 
-                                                                         method_test_stubs = self.method_test_stubs)  # substitute key fields
-        tmp_module = open("dynamic_analysis.py", "w+")                                                  # open the unit test module instance
-        tmp_module.write(dynamic_analysis_template)                                                     # write the new unit test module to the test module instance
+        self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 
+                                                                         method_test_stubs=self.method_test_stubs,
+                                                                         assignment_instance_name="$assignment_instance_name",
+                                                                         assignment_instance="$assignment_instance")  # substitute key fields
+        tmp_module = open(self.grading_key.replace(".\\", "").split('.')[0] + "_dynamic_analysis.py", "w+")           # open the unit test module instance
+        tmp_module.write(self.dynamic_analysis_template)                                            # write the new unit test module to the test module instance
         tmp_module.close()                                                                              # close the test module instance's file
-        reload(dynamic_analysis)                                                                        # reload the test module instance so this Tester has access
+        #editor.edit("dynamic_analysis.py")
+        #reload(dynamic_analysis)                                                                # reload the test module instance so this Tester has access
 
-    def analyze_dynamically(self):
+    def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""
-        dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis.DynamicAnalysis)    # grab tests from the test module instance
+        target_script_name = target_script.replace(".\\", "").split('.py')[0]
+        target_script_test_suite_path = target_script.split('.py')[0] + "_dynamic_analysis.py"
+        target_script_test_suite_name = target_script_name  + "_dynamic_analysis"
+        target_script_test_suite = open(target_script_test_suite_path, "w+")
+        target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(assignment_instance=target_script.replace("\\", "\\\\"),
+                                                                                           assignment_instance_name=target_script_name))
+        target_script_test_suite.close()
+        module = imp.load_source(target_script_test_suite_name, os.path.abspath(target_script_test_suite_path))
+        dynamic_analysis = getattr(module, "DynamicAnalysis")
+        dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis)    # grab tests from the test module instance
         unittest.TextTestRunner(stream=self.captured_output).run(dynamic_test)                          # run tests and pipe to captured_output
 
 if __name__=="__main__":
     try:
         args=sys.argv[1:]
         tester1 = Tester(str(args[0]))
-        tester1.analyze_dynamically()
+        tester1.analyze_dynamically(".\\fakemain_instance.py")
         print(tester1.captured_output.read())
+
     except BaseException as e:
         if len(args) < 1:
             print("No arguments provided")
