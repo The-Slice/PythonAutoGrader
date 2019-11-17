@@ -4,6 +4,13 @@ from PyQt5.QtCore import *
 from functools import partial
 
 class TestConfigOptionBox:
+    """
+    This class is primarily a holder for multiple TestConfigOption
+    objects. It handles passing information between the interface 
+    and the driver, as well as changing the checkbox locations when
+    options are expanded
+
+    """
     def __init__(self, xloc, yloc, parent):
         self.x = xloc
         self.y = yloc
@@ -14,6 +21,7 @@ class TestConfigOptionBox:
         self.collapsed = []
 
     def add(self, name, opts=None):
+        
         self.children.append(TestConfigOption(name, self.x, self.lowerBound, self.parent, opts=opts, opsbox=self))
         self.collapsed.append(self.children[-1].collapsed)
         self.lowerBound = self.children[-1].y + 20
@@ -21,11 +29,9 @@ class TestConfigOptionBox:
         self.parent.setListener(self.testdict[name][1].testCheck, partial(self.toggleTest, name))
 
     def toggleTest(self, name):
-        print(name, " is now ", not self.testdict[name][0])
         self.testdict[name][0] = not self.testdict[name][0]
 
     def getTestOptions(self, key):
-        print("Config: ",self.testdict[key][1].getConfig())
         return self.testdict[key][1].getConfig()
     
     def reshape(self):
@@ -85,7 +91,6 @@ class TestConfigOption:
 
 
     def display_opts(self):
-        print(self.y)
         if self.collapsed:
             self.dropdown.setArrowType(Qt.DownArrow)
             for num, option in enumerate(self.options):
@@ -97,7 +102,6 @@ class TestConfigOption:
                 temp.show()
                 self.parent.setListener(temp, partial(self.toggleOpts, option))
                 self.tempbuttons.append(temp)
-                print(len(self.options))
             self.parent.show()
             self.collapsed = False
         else:
