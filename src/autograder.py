@@ -172,6 +172,7 @@ class App(QMainWindow):
 
     @pyqtSlot()
     def grade_on_click(self):
+        # TODO: IMPLEMENT
         pass
 
     @pyqtSlot()
