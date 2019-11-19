@@ -40,8 +40,8 @@ class App(QMainWindow):
             }
         )
         self.optionBoxes.add('Dynamic Analysis', {'1': False, '2': False})
-        #for opt in self.optionBoxes.children:
-        #S    opt.dropdown.clicked.connect(opt.getExpandListener())
+        for opt in self.optionBoxes.children:
+            opt.dropdown.clicked.connect(opt.getExpandListener())
 
     def initUI(self):
         self.setWindowTitle(self.title)
