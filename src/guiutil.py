@@ -9,6 +9,10 @@ class TestConfigOptionBox:
     objects. It handles passing information between the interface 
     and the driver, as well as changing the checkbox locations when
     options are expanded
+    Params:
+    (int) xloc: the x axis on the parent GUI that the nested components will be drawn
+    (int) yloc: the y axis on the parent GUI that the nested components will be drawn
+    (PyQT5.QMainWindoe) parent: The gui that the box will attach to
 
     """
     def __init__(self, xloc, yloc, parent):
@@ -21,6 +25,12 @@ class TestConfigOptionBox:
         self.collapsed = []
 
     def add(self, name, opts=None):
+        """
+        Adds a child TestConfigOption to self
+        Params:
+        (str) name: label of the child dropdown ment
+        (dictionary) opts: a dictionary of toggleable options for the dropdown menus
+        """
         
         self.children.append(TestConfigOption(name, self.x, self.lowerBound, self.parent, opts=opts, opsbox=self))
         self.collapsed.append(self.children[-1].collapsed)
@@ -29,6 +39,11 @@ class TestConfigOptionBox:
         self.parent.setListener(self.testdict[name][1].testCheck, partial(self.toggleTest, name))
 
     def toggleTest(self, name):
+        """
+        This function takes a test in the testdict and reverses it's current boolean value
+        Params:
+        (str) name: name of the test to toggle
+        """
         self.testdict[name][0] = not self.testdict[name][0]
 
     def getTestOptions(self, key):
