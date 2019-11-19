@@ -42,7 +42,7 @@ class TestConfigOptionBox:
                 if opt.collapsed:
                     self.children[num + 1].shiftUp(low + 20)
                 else:
-                    self.children[num + 1].shiftDown(low + 20)
+                    self.children[num + 1].shiftDown(low + 25)
 
 
 class TestConfigOption:
@@ -59,6 +59,7 @@ class TestConfigOption:
         self.x = xloc
         self.y = yloc
         self.dropdown = QToolButton(parent, checkable=True, checked=False)
+        self.dropdown.setFixedSize(20,20)
         if opts is None:
             self.options = {}
         else:
@@ -67,7 +68,9 @@ class TestConfigOption:
         self.testCheck.move(xloc, yloc)
         self.dropdown.move(xloc + 140, yloc)
         self.dropdown.setArrowType(Qt.LeftArrow)
-        self.dropdown.setIconSize(QSize(15, 15))
+        self.dropdown.show()
+        self.testCheck.adjustSize()
+        self.testCheck.show()
         self.parent.setListener(self.dropdown, self.getExpandListener)
     
     def getConfig(self):

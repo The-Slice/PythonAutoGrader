@@ -1,18 +1,20 @@
-import sys
 import ctypes
 import os
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from guiutil import *
+import re
+import shutil
+import sys
 from zipfile import ZipFile
-from commentSummary import CommentSummary
+from shutil import copy2
+import glob
+
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 BORDERSIZE = 10
 
+class App(QMainWindow):
 
-class App(QWidget):
-
-    def __init__(self):
+    def __init__(self, parent=None):
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
         screenHeight = user32.GetSystemMetrics(1)
@@ -22,16 +24,6 @@ class App(QWidget):
         self.height = screenHeight / 2
         self.left = screenWidth / 2 - self.width / 2
         self.top = screenHeight / 2 - self.height / 2
-        self.testSuiteDict = {
-            'Comment Analysis': True,
-            'Dynamic Analysis': False
-        }
-
-        self.testSuiteRun = { # This dictionary assigns the string ID of the test to the constructor
-            'Comment Analysis': CommentSummary
-        }
-
-        self.toBeGraded = []
 
         self.initUI()
 
@@ -39,51 +31,38 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
-        # elements
-        self.optionBoxes = TestConfigOptionBox(BORDERSIZE, BORDERSIZE, self)
-        self.optionBoxes.add('Comment Analysis', 
-            {
-            'Display Docstring': True, 
-            'Count Comments': False,
-            'Display Comments': True 
-            }
-        )
-        self.optionBoxes.add('Dynamic Analysis', {'1': False, '2': False})
-        for opt in self.optionBoxes.children:
-            opt.dropdown.clicked.connect(opt.getExpandListener())
-        #toggle_button1 = QToolButton(self, checkable=True, checked=False)
-        #toggle_button1.setArrowType(Qt.RightArrow)
-        #button2 = QCheckBox('Dynamic Analysis', self)
-        button3 = QPushButton('Select Homework Zip(s)', self)
-        button4 = QPushButton('Select Homework Directory', self)
-		
-        button5 = QPushButton('Grade', self)
-		
+
         resultArea = QPlainTextEdit(self)
+        
+        exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
+        exitAct.setShortcut('Ctrl+Q')
+        exitAct.setStatusTip('Exit application')
+        exitAct.triggered.connect(qApp.quit)
 
-        # button 1
-        #self.button1.dropdown.clicked.connect(self.comment_config_dropdown)
-        #button1.setToolTip('This is an example button')
-        #button1.move(BORDERSIZE, BORDERSIZE)
-        #button1.clicked.connect(self.comment_on_click)
-        #toggle_button1.move(BORDERSIZE + 130, BORDERSIZE)
-        #Stoggle_button1.clicked.connect()
-        # button 2
-        #button2.setToolTip('This is an example button')
-        #button2.move(BORDERSIZE, button1.height()+BORDERSIZE+3)
-        #button2.clicked.connect(self.dynamic_on_click)	
+        openFile = QAction(QIcon('exit.png'), '&Open Zip(s)', self)        
+        openFile.setShortcut('Ctrl+O')
+        openFile.setStatusTip('Open Zip(s)')
+        openFile.triggered.connect(self.zipdialog_on_click)
 
-        #Sbutton3.setToolTip('Select Homework Zip(s)')
-        button3.move(200,40)
-        button3.clicked.connect(self.zipdialog_on_click)
+        openDir = QAction(QIcon('exit.png'), '&Open Directory', self)        
+        openDir.setShortcut('Ctrl+D')
+        openDir.setStatusTip('Open Directory')
+        openDir.triggered.connect(self.zipdirectory_on_click)
 
-        button4.setToolTip('Select Homework Directory')
-        button4.move(200,10)
-        button4.clicked.connect(self.dirdialog_on_click)
 
-        button5.setToolTip('Grade')
-        button5.move(200,10)
-        button5.clicked.connect(self.grade_assignments)
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(openDir)
+        fileMenu.addAction(openFile)
+        fileMenu.addAction(exitAct)
+
+        labelA = QLabel('Assignment Key:', self)
+        labelA.move(332, 175)
+        labelA.resize(160,40)
+
+        dragdrop = CustomLabel('Drop key here', self)
+        dragdrop.move(495, 175)
+        dragdrop.resize(500,40)
 
         # text result area
         resultArea.resize(self.width*0.75, self.height*0.75)
@@ -97,45 +76,80 @@ class App(QWidget):
         resultArea.setReadOnly(True)
         self.show()
 
-    def setListener(self, button, function):
-        button.clicked.connect(function)
 
     #opens directory filled with students zipped assignments
     def openDirectory(self):
-        options = QFileDialog.Options()
+        
+        options =  QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        dirPath = QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-        if dirPath:
-            for fileName in os.listdir(dirPath):
-                print(dirPath + fileName)
-                self.toBeGraded.append(dirPath + '/' + fileName)
+        fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
+		
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+		
+        try:
+            os.mkdir("temp")
+        except FileExistsError:
+            try:
+                shutil.rmtree("temp")
+                os.mkdir("temp")
+            except PermissionError:
+                print("temp folder is in use")
+                QMessageBox.about(self , "Attention" , "unzip failed") 
+                return 
+	
+	    
+	    #for each zip folder unzip the folder
+        for subdir, dirs, files in os.walk(fileName):
+            for file in files:
+                if(file.find('.zip') != -1):
+
+                    zipfileName = re.search('[^/]+$', file)
+                    zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                    
+                    with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                        zippedObject.extractall(zipfileNameParse)
+						
+					#file is moved to temp once zip file is extracted into its own filename			
+                    os.rename(zipfileNameParse, "temp\\" + zipfileNameParse) 
+                    
 			
     #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "",".zip (*.zip *.7z)", options=options)
+        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","Zip Files (*.zip *.7zip)", options=options)
+        
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+		
+        try:
+            os.mkdir("temp")
+        except FileExistsError:
+            try:
+                shutil.rmtree("temp")
+                os.mkdir("temp")
+            except PermissionError:
+                print("temp folder is in use")
+                QMessageBox.about(self , "Attention" , "unzip failed") 
+                return 
+				
+		#for each zip folder unzip the folder
         for file in files:
+
             zipfileName = re.search('[^/]+$', file)
-
-            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
-                zippedObject.extractall('temp')
+            zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
             
-            #for fileName in os.listdir('temp'):
-                #print(fileName)
-                #with ZipFile(fileName , 'r') as zippedObject:
-                    #zippedObject.extractall('studentWork')
-                
+            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                zippedObject.extractall(zipfileNameParse)
 			
-    def grade_assignments(self):
-        for assignment in self.toBeGraded:
-            for key in self.testSuiteDict:
-                if self.testSuiteDict[key]:
-                    test = self.testSuiteRun[key](assignment, self.optionBoxes.getTestOptions(key))
-                    print(test)
-                    test.run()
-
-
+			#file is moved to temp once zip file is extracted into its own filename			
+            os.rename(zipfileNameParse, "temp\\" + zipfileNameParse)        
+				
+        
+                
     def center(self):
         qtRectangle = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
@@ -147,14 +161,34 @@ class App(QWidget):
         self.openFileNamesDialog()
 
     @pyqtSlot()
-    def dirdialog_on_click(self):
-        self.openDirectory() 
-        
-    @pyqtSlot()
-    def comment_config_dropdown(self):
-        self.button1.display_opts()
-        
+    def zipdirectory_on_click(self):
+        self.openDirectory()
+    
+class CustomLabel(QLabel):
+    
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setAcceptDrops(True)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+    
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            filename = os.path.basename(path)
+            dirname = "../target/key"
+            filecheck = os.path.join(dirname, filename)
+            if os.path.isfile(path) and os.path.exists(filecheck):
+                self.setText("Oops, that key already exists")
+            elif os.path.isfile(path) and not os.path.exists(filecheck):
+                self.setText(path)
+                shutil.rmtree(dirname)
+                os.mkdir(dirname)
+                copy2(path, dirname)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
