@@ -47,6 +47,7 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
+        self.setWindowIcon(QIcon('../img/pythonBlogold.ico'))
         
         gradeButton = QPushButton("Grade", self)
         gradeButton.move(300, 50)
