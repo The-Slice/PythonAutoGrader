@@ -10,6 +10,7 @@ import glob
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from tester import Tester
 BORDERSIZE = 10
 
 class App(QMainWindow):
@@ -156,6 +157,12 @@ class App(QMainWindow):
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
 
+    def runTests(self):
+        t = Tester("../target/key")
+        for assignment_instance in os.listdir("temp\\"):
+            t.analyze_dynamically(assignment_instance)
+        #TODO: pipe outpute content accessed as string via t.captured_output
+
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
@@ -163,6 +170,10 @@ class App(QMainWindow):
     @pyqtSlot()
     def zipdirectory_on_click(self):
         self.openDirectory()
+
+    @pyqtSlot()
+    def run_tests_on_click(self):
+        self.runTests()
     
 class CustomLabel(QLabel):
     
