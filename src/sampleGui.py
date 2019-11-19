@@ -4,6 +4,8 @@ import re
 import shutil
 import sys
 from zipfile import ZipFile
+from shutil import copy2
+import glob
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -45,7 +47,7 @@ class App(QMainWindow):
         openDir = QAction(QIcon('exit.png'), '&Open Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
-        openDir.triggered.connect(self.zipdialog_on_click)
+        openDir.triggered.connect(self.zipdirectory_on_click)
 
 
         menubar = self.menuBar()
@@ -53,6 +55,14 @@ class App(QMainWindow):
         fileMenu.addAction(openDir)
         fileMenu.addAction(openFile)
         fileMenu.addAction(exitAct)
+
+        labelA = QLabel('Assignment Key:', self)
+        labelA.move(332, 175)
+        labelA.resize(160,40)
+
+        dragdrop = CustomLabel('Drop key here', self)
+        dragdrop.move(495, 175)
+        dragdrop.resize(500,40)
 
         # text result area
         resultArea.resize(self.width*0.75, self.height*0.75)
@@ -69,8 +79,8 @@ class App(QMainWindow):
 
     #opens directory filled with students zipped assignments
     def openDirectory(self):
-	
-        options = QFileDialog.Options()
+        
+        options =  QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
 		
@@ -154,6 +164,31 @@ class App(QMainWindow):
     def zipdirectory_on_click(self):
         self.openDirectory()
     
+class CustomLabel(QLabel):
+    
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+    
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            filename = os.path.basename(path)
+            dirname = "../target/key"
+            filecheck = os.path.join(dirname, filename)
+            if os.path.isfile(path) and os.path.exists(filecheck):
+                self.setText("Oops, that key already exists")
+            elif os.path.isfile(path) and not os.path.exists(filecheck):
+                self.setText(path)
+                shutil.rmtree(dirname)
+                os.mkdir(dirname)
+                copy2(path, dirname)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

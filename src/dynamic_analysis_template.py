@@ -11,10 +11,12 @@ class DynamicAnalysis(unittest.TestCase):
 
     def test_main(self):
         """ this test method is designed to run the assignment script as main and capture the output"""
-        #exec_str = open("$target_script", "r").read()
+        #exec_str = open("$grading_key", "r").read()
         #print(exec_str)
         #exec(exec_str)
-        subprocess.run([sys.executable, "$target_script"])
+        subprocess.run([sys.executable, "$grading_key"])
+
+$method_test_stubs
 
     def tearDown(self):
         """ this method restores the environment after testing"""
