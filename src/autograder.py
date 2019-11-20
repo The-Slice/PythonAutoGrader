@@ -47,7 +47,7 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
-        self.setWindowIcon(QIcon('../img/pythonBlogold.ico'))
+        self.setWindowIcon(QIcon('../img/pythonBlugold.ico'))
         
         gradeButton = QPushButton("Grade", self)
         gradeButton.move(300, 50)
@@ -96,37 +96,40 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-		
+        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
+        
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-		#PermissionError exception fixes this issue
-		
-        try:
-            os.mkdir("temp")
-        except FileExistsError:
-            try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
-            except PermissionError:
-                print("temp folder is in use")
-                QMessageBox.about(self , "Attention" , "unzip failed") 
-                return 
-	
-	    
-	    #for each zip folder unzip the folder
-        for subdir, dirs, files in os.walk(fileName):
-            for file in files:
-                if(file.find('.zip') != -1):
+		#PermissionError exception fixes this issue           
 
-                    zipfileName = re.search('[^/]+$', file)
-                    zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                    
-                    with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
-                        zippedObject.extractall(zipfileNameParse)
-						
-					#file is moved to temp once zip file is extracted into its own filename			
-                    os.rename(zipfileNameParse, "temp\\" + zipfileNameParse) 
+        if (ifileName and ofileName):
+            try:
+                os.mkdir(ofileName + "/studentWork")
+            except FileExistsError:
+                try:
+                    shutil.rmtree(ofileName + "/studentWork")
+                    os.mkdir(ofileName + "/studentWork")
+                except PermissionError:
+                    print("studentWork folder is in use")
+                    QMessageBox.about(self , "Attention" , "unzip failed") 
+                    return 
+        
+            #for each zip folder unzip the folder
+            for subdir, dirs, files in os.walk(ifileName):
+                for file in files:
+                    if(file.find('.zip') != -1):
+
+                        zipfileName = re.search('[^/]+$', file)
+                        zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                        
+                        with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                            zippedObject.extractall(zipfileNameParse)
+                        
+                        #file is moved to temp once zip file is extracted into its own filename			
+                        os.rename(zipfileNameParse, ofileName +"/studentWork/" + zipfileNameParse)
+        else:
+            pass
                     
 			
     #opens zipped directory filled with students zipped assignments
@@ -134,24 +137,23 @@ class App(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","Zip Files (*.zip *.7zip)", options=options)
-        print(files)
-        
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
 		
         try:
-            os.mkdir("temp")
+            os.mkdir(ofileName + "/studentWork")
         except FileExistsError:
             try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
+                shutil.rmtree(ofileName + "/studentWork")
+                os.mkdir(ofileName + "/studentWork")
             except PermissionError:
-                print("temp folder is in use")
+                print("studentWork folder is in use")
                 QMessageBox.about(self , "Attention" , "unzip failed") 
                 return 
-				
-		#for each zip folder unzip the folder
+                
+        #for each zip folder unzip the folder
         for file in files:
 
             zipfileName = re.search('[^/]+$', file)
@@ -159,10 +161,10 @@ class App(QMainWindow):
             
             with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
                 zippedObject.extractall(zipfileNameParse)
-			
-			#file is moved to temp once zip file is extracted into its own filename			
-            os.rename(zipfileNameParse, "temp\\" + zipfileNameParse)
-            #os.rename(zipfile, "temp\\" + zipfileNameParse)	
+            
+            #file is moved to temp once zip file is extracted into its own filename			
+            os.rename(zipfileNameParse, ofileName + "/studentWork/" + zipfileNameParse)
+           
         
                 
     def center(self):

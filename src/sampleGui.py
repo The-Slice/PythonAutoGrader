@@ -89,13 +89,13 @@ class App(QMainWindow):
 		#PermissionError exception fixes this issue
 		
         try:
-            os.mkdir("temp")
+            os.mkdir("studentWork")
         except FileExistsError:
             try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
+                shutil.rmtree("studentWork")
+                os.mkdir("studentWork")
             except PermissionError:
-                print("temp folder is in use")
+                print("studentWork folder is in use")
                 QMessageBox.about(self , "Attention" , "unzip failed") 
                 return 
 	
@@ -126,13 +126,13 @@ class App(QMainWindow):
 		#PermissionError exception fixes this issue
 		
         try:
-            os.mkdir("temp")
+            os.mkdir("studentWork")
         except FileExistsError:
             try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
+                shutil.rmtree("studentWork")
+                os.mkdir("studentWork")
             except PermissionError:
-                print("temp folder is in use")
+                print("studentWork folder is in use")
                 QMessageBox.about(self , "Attention" , "unzip failed") 
                 return 
 				
