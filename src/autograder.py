@@ -202,12 +202,9 @@ class App(QMainWindow):
             else :
                 self.dragdrop.setText(ifileName[0])
                 copy2(ifileName[0], dirname)
-        
-
-            
             
         else:
-            pass
+            self.dragdrop.setText("Please select a key")
 
            
         
