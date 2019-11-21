@@ -197,9 +197,6 @@ class App(QMainWindow):
             
             if (os.path.isfile(os.path.basename(ifileName[0]))):
 
-                self.dragdrop.setText("Oops, that key already exists")
-
-            else :
                 self.dragdrop.setText(ifileName[0])
                 copy2(ifileName[0], dirname)
         
