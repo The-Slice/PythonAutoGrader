@@ -236,14 +236,6 @@ class App(QMainWindow):
     def keydialog_on_click(self):
         self.openKeyDialog()
 
-
-    # the button that links everything together, checks all variables and runs the program
-    def grade_button_click(self):
-        print("Link everyones code together")
-
-
-        pass
-
 class KeyDrop(QLabel):
     
     def __init__(self, title, parent):
