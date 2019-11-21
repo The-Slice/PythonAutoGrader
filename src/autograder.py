@@ -53,6 +53,7 @@ class App(QMainWindow):
         
         gradeButton = QPushButton("Grade", self)
         gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
+        gradeButton.clicked.connect(self.grade_on_click)
         # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
         self.resultArea = QPlainTextEdit(self)
