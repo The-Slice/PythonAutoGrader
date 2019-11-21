@@ -11,9 +11,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
+STUDENTWORKSOURCE = ""
 
 class App(QMainWindow):
-
     
     def __init__(self, parent=None):
         user32 = ctypes.windll.user32
@@ -54,6 +54,7 @@ class App(QMainWindow):
         gradeButton = QPushButton("Grade", self)
         gradeButton.move(300, 50)
         resultArea = QPlainTextEdit(self)
+        gradeButton.clicked.connect(self.grade_on_click)
         
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
@@ -192,23 +193,14 @@ class App(QMainWindow):
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
         
-        if (ifileName[0] != ""):
+        if (ifileName != ""):
             dirname = "../target/key"
-            
-            if (os.path.isfile(os.path.basename(ifileName[0]))):
-
-                self.dragdrop.setText(ifileName[0])
-                copy2(ifileName[0], dirname)
-        
-
-            
+            self.dragdrop.setText(ifileName[0])
+            copy2(ifileName[0], dirname)
             
         else:
-            pass
+            self.dragdrop.setText("Please select a key")
 
-           
-        
-                
     def center(self):
         qtRectangle = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
@@ -217,8 +209,10 @@ class App(QMainWindow):
 
     @pyqtSlot()
     def grade_on_click(self):
-        # TODO: IMPLEMENT
-        pass
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        STUDENTWORKSOURCE = ifileName
 
     @pyqtSlot()
     def zipdialog_on_click(self):
