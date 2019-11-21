@@ -52,11 +52,9 @@ class App(QMainWindow):
         self.setWindowIcon(QIcon('../img/pythonBlugold.ico'))
         
         gradeButton = QPushButton("Grade", self)
-        gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
-        # need to connect this button to grade_button_click function
-        # if you want a gui element to exist in the scope of the program it must be declared as self
-        self.resultArea = QPlainTextEdit(self)
-
+        gradeButton.move(300, 50)
+        resultArea = QPlainTextEdit(self)
+        
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
@@ -84,28 +82,26 @@ class App(QMainWindow):
         fileMenu.addAction(openFile)
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
+        
+        self.dragdrop = KeyDrop('Drop key here', self)
+        labelA = QLabel('Assignment Key:', self)
+        labelA.move(332, 175)
+        labelA.resize(160,40)
 
-
-
+        
+        self.dragdrop.move(495, 175)
+        self.dragdrop.resize(500,40)
 
         # text result area
-        self.resultArea.resize(self.width*0.75, self.height*0.75)
+        resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
-        self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.resultArea.insertPlainText("Log of program status displayed below:\n")
-        self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
+        resultArea.insertPlainText("Hello World.\n")
+        resultArea.move(self.width/4-BORDERSIZE, self.height-resultArea.height()-BORDERSIZE)
 
-        self.resultArea.setReadOnly(True)
-
-        labelA = QLabel('Assignment Key:', self)
-        labelA.adjustSize()
-        labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
-
-        self.dragdrop = KeyDrop('Drop key here', self)
-        self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
-        self.dragdrop.resize(self.resultArea.width()-labelA.width()-BORDERSIZE, 20)
+        resultArea.setReadOnly(True)
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
@@ -201,14 +197,14 @@ class App(QMainWindow):
             
             if (os.path.isfile(os.path.basename(ifileName[0]))):
 
-                self.dragdrop.setText("Oops, that key already exists")
-
-            else :
                 self.dragdrop.setText(ifileName[0])
                 copy2(ifileName[0], dirname)
+        
+
+            
             
         else:
-            self.dragdrop.setText("Please select a key")
+            pass
 
            
         
@@ -235,21 +231,13 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
-
-
-    # the button that links everything together, checks all variables and runs the program
-    def grade_button_click(self):
-        print("Link everyones code together")
-
-
-        pass
+        
 
 class KeyDrop(QLabel):
     
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setAcceptDrops(True)
-        self.setStyleSheet("background-color: white; border: 1px inset grey")
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
