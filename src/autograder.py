@@ -4,6 +4,7 @@ import re
 import shutil
 import sys
 from zipfile import ZipFile
+from shutil import copy2
 from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -53,12 +54,14 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
-        self.setWindowIcon(QIcon('../img/pythonBlogold.ico'))
+        self.setWindowIcon(QIcon('../img/pythonBlugold.ico'))
         
         gradeButton = QPushButton("Grade", self)
-        gradeButton.move(300, 50)
-        resultArea = QPlainTextEdit(self)
-        
+        gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
+        # need to connect this button to grade_button_click function
+        # if you want a gui element to exist in the scope of the program it must be declared as self
+        self.resultArea = QPlainTextEdit(self)
+
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
@@ -74,23 +77,40 @@ class App(QMainWindow):
         openDir.setStatusTip('Open Directory')
         openDir.triggered.connect(self.zipdirectory_on_click)
 
+        openKey = QAction(QIcon('exit.png'), '&Open Key', self)        
+        openKey.setShortcut('Ctrl+F')
+        openKey.setStatusTip('Open Key')
+        openKey.triggered.connect(self.keydialog_on_click)
+
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(openDir)
         fileMenu.addAction(openFile)
+        fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
+
+
+
         # text result area
-        resultArea.resize(self.width*0.75, self.height*0.75)
+        self.resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
-        resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        resultArea.insertPlainText("Hello World.\n")
-        resultArea.move(self.width/4-BORDERSIZE, self.height-resultArea.height()-BORDERSIZE)
+        self.resultArea.insertPlainText("Log of program status displayed below:\n")
+        self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
-        resultArea.setReadOnly(True)
+        self.resultArea.setReadOnly(True)
+
+        labelA = QLabel('Assignment Key:', self)
+        labelA.adjustSize()
+        labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
+
+        self.dragdrop = KeyDrop('Drop key here', self)
+        self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
+        self.dragdrop.resize(self.resultArea.width()-labelA.width()-BORDERSIZE, 20)
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
@@ -102,37 +122,40 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName= QFileDialog.getExistingDirectory(self,"Please Select a Directory", options=options)
-		
+        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
+        
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-		#PermissionError exception fixes this issue
-		
-        try:
-            os.mkdir("temp")
-        except FileExistsError:
-            try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
-            except PermissionError:
-                print("temp folder is in use")
-                QMessageBox.about(self , "Attention" , "unzip failed") 
-                return 
-	
-	    
-	    #for each zip folder unzip the folder
-        for subdir, dirs, files in os.walk(fileName):
-            for file in files:
-                if(file.find('.zip') != -1):
+		#PermissionError exception fixes this issue           
 
-                    zipfileName = re.search('[^/]+$', file)
-                    zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                    
-                    with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
-                        zippedObject.extractall(zipfileNameParse)
-						
-					#file is moved to temp once zip file is extracted into its own filename			
-                    os.rename(zipfileNameParse, "temp\\" + zipfileNameParse) 
+        if (ifileName and ofileName):
+            try:
+                os.mkdir(ofileName + "/studentWork")
+            except FileExistsError:
+                try:
+                    shutil.rmtree(ofileName + "/studentWork")
+                    os.mkdir(ofileName + "/studentWork")
+                except PermissionError:
+                    print("studentWork folder is in use")
+                    QMessageBox.about(self , "Attention" , "unzip failed") 
+                    return 
+        
+            #for each zip folder unzip the folder
+            for subdir, dirs, files in os.walk(ifileName):
+                for file in files:
+                    if(file.find('.zip') != -1):
+
+                        zipfileName = re.search('[^/]+$', file)
+                        zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                        
+                        with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                            zippedObject.extractall(zipfileNameParse)
+                        
+                        #file is moved to temp once zip file is extracted into its own filename			
+                        os.rename(zipfileNameParse, ofileName +"/studentWork/" + zipfileNameParse)
+        else:
+            pass
                     
 			
     #opens zipped directory filled with students zipped assignments
@@ -140,35 +163,56 @@ class App(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","Zip Files (*.zip *.7zip)", options=options)
-        print(files)
-        
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
-		
-        try:
-            os.mkdir("temp")
-        except FileExistsError:
+        if (files and ofileName):
             try:
-                shutil.rmtree("temp")
-                os.mkdir("temp")
-            except PermissionError:
-                print("temp folder is in use")
-                QMessageBox.about(self , "Attention" , "unzip failed") 
-                return 
-				
-		#for each zip folder unzip the folder
-        for file in files:
+                os.mkdir(ofileName + "/studentWork")
+            except FileExistsError:
+                try:
+                    shutil.rmtree(ofileName + "/studentWork")
+                    os.mkdir(ofileName + "/studentWork")
+                except PermissionError:
+                    print("studentWork folder is in use")
+                    QMessageBox.about(self , "Attention" , "unzip failed") 
+                    return 
+                    
+            #for each zip folder unzip the folder
+            for file in files:
 
-            zipfileName = re.search('[^/]+$', file)
-            zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-            
-            with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
-                zippedObject.extractall(zipfileNameParse)
-			
-			#file is moved to temp once zip file is extracted into its own filename			
-            os.rename(zipfileNameParse, "temp\\" + zipfileNameParse)
-            #os.rename(zipfile, "temp\\" + zipfileNameParse)	
+                zipfileName = re.search('[^/]+$', file)
+                zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                
+                with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                    zippedObject.extractall(zipfileNameParse)
+                
+                #file is moved to temp once zip file is extracted into its own filename			
+                os.rename(zipfileNameParse, ofileName + "/studentWork/" + zipfileNameParse)
+        else:
+            pass
+
+    def openKeyDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        ifileName = QFileDialog.getOpenFileName(self,"Please Select a Key File", "","Key Files (*py)", options=options)
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+        
+        if (ifileName):
+        
+            for file in ifileName:
+                zipfileName = re.search('[^/]+$', file)
+                zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                self.dragdrop.setText(ifileName[0])
+
+
+        else:
+            pass
+
+           
         
                 
     def center(self):
@@ -189,6 +233,45 @@ class App(QMainWindow):
     @pyqtSlot()
     def zipdirectory_on_click(self):
         self.openDirectory()
+
+    @pyqtSlot()
+    def keydialog_on_click(self):
+        self.openKeyDialog()
+
+
+    # the button that links everything together, checks all variables and runs the program
+    def grade_button_click(self):
+        print("Link everyones code together")
+
+
+        pass
+
+class KeyDrop(QLabel):
+    
+    def __init__(self, title, parent):
+        super().__init__(title, parent)
+        self.setAcceptDrops(True)
+        self.setStyleSheet("background-color: white; border: 1px inset grey")
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+    
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            filename = os.path.basename(path)
+            dirname = "../target/key"
+            filecheck = os.path.join(dirname, filename)
+            if os.path.isfile(path) and os.path.exists(filecheck):
+                self.setText("Oops, that key already exists")
+            elif os.path.isfile(path) and not os.path.exists(filecheck):
+                self.setText(path)
+                shutil.rmtree(dirname)
+                os.mkdir(dirname)
+                copy2(path, dirname)
     
 
 if __name__ == '__main__':
