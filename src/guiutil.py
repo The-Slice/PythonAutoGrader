@@ -121,6 +121,7 @@ class TestConfigOption:
                         temp.setChecked(True)
                     temp.move (self.x + 10, self.y)
                     temp.show()
+                    temp.adjustSize()
                     self.parent.setListener(temp, partial(self.toggleOpts, option))
                 else:
                     self.y += opt[2]
