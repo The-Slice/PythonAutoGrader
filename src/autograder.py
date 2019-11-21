@@ -14,6 +14,7 @@ DROPDOWN_LOC = 30
 
 class App(QMainWindow):
 
+    
     def __init__(self, parent=None):
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
@@ -81,15 +82,15 @@ class App(QMainWindow):
         fileMenu.addAction(openFile)
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
-
-
+        
+        self.dragdrop = KeyDrop('Drop key here', self)
         labelA = QLabel('Assignment Key:', self)
         labelA.move(332, 175)
         labelA.resize(160,40)
 
-        dragdrop = KeyDrop('Drop key here', self)
-        dragdrop.move(495, 175)
-        dragdrop.resize(500,40)
+        
+        self.dragdrop.move(495, 175)
+        self.dragdrop.resize(500,40)
 
         # text result area
         resultArea.resize(self.width*0.75, self.height*0.75)
@@ -191,13 +192,10 @@ class App(QMainWindow):
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
         
-        if (ifileName):
-        
-            for file in ifileName:
-                zipfileName = re.search('[^/]+$', file)
-                zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                print(ifileName[0])
-
+        if (ifileName[0] != ""):
+            dirname = "../target/key"
+            self.dragdrop.setText(ifileName[0])
+            copy2(ifileName[0], dirname)
         else:
             pass
 
@@ -226,6 +224,7 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
+        
 
 class KeyDrop(QLabel):
     
@@ -252,7 +251,7 @@ class KeyDrop(QLabel):
                 shutil.rmtree(dirname)
                 os.mkdir(dirname)
                 copy2(path, dirname)
-    
+   
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

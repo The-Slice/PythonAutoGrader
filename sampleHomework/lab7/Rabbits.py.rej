@@ -1,0 +1,7 @@
+diff a/sampleHomework/lab7/Rabbits.py b/sampleHomework/lab7/Rabbits.py	(rejected hunks)
+@@ -0,4 +0,5 @@
+ import sys
++import random
+ import math
+ 
+ #rabbit class 
