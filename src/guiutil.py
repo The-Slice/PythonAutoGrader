@@ -111,6 +111,7 @@ class TestConfigOption:
         if self.collapsed:
             self.dropdown.setArrowType(Qt.DownArrow)
             for num, option in enumerate(self.options):
+<<<<<<< HEAD
                 yChange = None
                 opt = self.options[option]
                 if not isinstance(opt, list):
@@ -134,6 +135,18 @@ class TestConfigOption:
                 self.tempbuttons.append([temp, yChange])
                 self.parent.show()
                 
+=======
+                self.y += 17
+                temp = QCheckBox(option, self.parent)
+                if self.options[option]:
+                    temp.setChecked(True)
+                temp.move (self.x + 10, self.y)
+                temp.show()
+                temp.adjustSize()
+                self.parent.setListener(temp, partial(self.toggleOpts, option))
+                self.tempbuttons.append(temp)
+            self.parent.show()
+>>>>>>> 520ba17299201d9eaf008f59df59c182505684ac
             self.collapsed = False
 
         else:
