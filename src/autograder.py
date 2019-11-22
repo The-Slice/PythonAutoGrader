@@ -110,9 +110,15 @@ class App(QMainWindow):
         labelA.adjustSize()
         labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
 
+
         self.dragdrop = KeyDrop('Drop key here', self)
         self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
-        self.dragdrop.resize(self.resultArea.width()-labelA.width()-BORDERSIZE, 20)
+        self.dragdrop.resize((self.resultArea.width()-100)-labelA.width()-BORDERSIZE, 20)
+
+        addKeyButton = QPushButton("Add key", self)
+        addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
+        addKeyButton.clicked.connect(self.keydialog_on_click)
+
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
@@ -237,7 +243,7 @@ class App(QMainWindow):
         self.openKeyDialog()
 
 class KeyDrop(QLabel):
-    
+
     def __init__(self, title, parent):
         super().__init__(title, parent)
         self.setAcceptDrops(True)
