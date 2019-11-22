@@ -235,12 +235,16 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
         STUDENTWORKSOURCE = ifileName
-        print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)              #TODO: print out to log
-        CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, "Activity1.py") #NOTE: hardcoded because I wasn't getting this to set correctly from Open Key
-        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH)      #TODO: print out to log, or not
+        print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
+        self.resultArea.insertPlainText("Grading Directory: " + STUDENTWORKSOURCE + "\n")
+        keyFileName = os.path.basename(self.dragdrop.text())
+        CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
+        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH)
+        self.resultArea.insertPlainText("Key Directory: " + CURRENT_GRADING_KEY_PATH  + "\n")
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
             dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("dnt INITIALIZED")                                    #TODO: print out to log, or not
+            print("dnt INITIALIZED")
+            self.resultArea.insertPlainText("dnt INITIALIZED"  + "\n")                                
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
