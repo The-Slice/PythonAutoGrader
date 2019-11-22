@@ -1,3 +1,3 @@
 src/__pycache__/
 *.pyc
-target/key
+target/key/*
