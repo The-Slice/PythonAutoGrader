@@ -5,14 +5,8 @@ This module contains the necessary routines to perform analysis of a single-scri
 from importlib import import_module, invalidate_caches, reload
 import os
 import sys
-"""
-if(os.path.exists("dynamic_analysis.py")):
-    os.remove("dynamic_analysis.py")
-with open("dynamic_analysis.py", "w+") as f:
-    f.write("pass")
-"""
-import dynamic_analysis
 import unittest
+from shutil import copy2
 import tempfile
 import re
 import editor
@@ -58,10 +52,12 @@ def generate_method_test_stubs(method_defs):
 class Tester():
     """ this class performs and logs static and/or dynamic analysis for a given assignment """
 
-    def __init__(self, grading_key):
+    def __init__(self, grading_key, parent_dir):
         """ this __init__ realizes the dynamic_analysis_template using the given assignment's information, 
         then updates and reloads the dynamic_analysis module 
         """
+        self.tempdir= os.path.join(parent_dir, "target", "temp")
+        sys.path.insert(0,self.tempdir)
         self.grading_key = grading_key                                                                  # keep the handle to the grading key
         self.captured_output = tempfile.TemporaryFile(mode="w+", delete=False)                          # a place to write a test's output to
         dynamic_analysis_template = Template(open("dynamic_analysis_template.py", "r").read())          # load the generic unit test suite template
@@ -71,7 +67,7 @@ class Tester():
                                                                          method_test_stubs=self.method_test_stubs,
                                                                          assignment_instance_name="$assignment_instance_name",
                                                                          assignment_instance="$assignment_instance")  # substitute key fields
-        tmp_module = open(self.grading_key.replace(".\\", "").split('.')[0] + "_dynamic_analysis.py", "w+")           # open the unit test module instance
+        tmp_module = open(os.path.basename(self.grading_key).split('.')[0] + "_dynamic_analysis.py", "w+")           # open the unit test module instance
         tmp_module.write(self.dynamic_analysis_template)                                            # write the new unit test module to the test module instance
         tmp_module.close()                                                                              # close the test module instance's file
         #editor.edit("dynamic_analysis.py")
@@ -79,17 +75,22 @@ class Tester():
 
     def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""
-        target_script_name = target_script.replace(".\\", "").split('.py')[0]
-        target_script_test_suite_path = target_script.split('.py')[0] + "_dynamic_analysis.py"
+        copy2(target_script, self.tempdir)        
+        target_script_name = os.path.basename(target_script).split('.py')[0]
+        target_script_test_suite_path = os.path.join(self.tempdir, target_script_name + "_dynamic_analysis.py")
         target_script_test_suite_name = target_script_name  + "_dynamic_analysis"
         target_script_test_suite = open(target_script_test_suite_path, "w+")
-        target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(assignment_instance=target_script.replace("\\", "\\\\"),
+        target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(assignment_instance=os.path.abspath(target_script),
                                                                                            assignment_instance_name=target_script_name))
         target_script_test_suite.close()
         module = imp.load_source(target_script_test_suite_name, os.path.abspath(target_script_test_suite_path))
         dynamic_analysis = getattr(module, "DynamicAnalysis")
         dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis)    # grab tests from the test module instance
         unittest.TextTestRunner(stream=self.captured_output).run(dynamic_test)                          # run tests and pipe to captured_output
+        try:
+            os.remove(os.path.join(self.tempdir, os.path.basename(target_script_name)))
+        except:
+            pass
 
 if __name__=="__main__":
     try:

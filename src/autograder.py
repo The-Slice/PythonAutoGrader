@@ -9,9 +9,15 @@ from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from tester import *
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
-STUDENTWORKSOURCE = ""
+AUTOGRADER_PATH = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
+print("AUTOGRADER_PATH:", AUTOGRADER_PATH)
+TARGET_DIR_PATH = os.path.join(AUTOGRADER_PATH, "target")
+KEY_DIR_PATH = os.path.join(TARGET_DIR_PATH, "key")
+CURRENT_GRADING_KEY_PATH = None
+STUDENTWORKSOURCE = None
 
 class App(QMainWindow):
     
@@ -210,9 +216,9 @@ class App(QMainWindow):
 		#PermissionError exception fixes this issue
         
         if (ifileName != ""):
-            dirname = "../target/key"
             self.dragdrop.setText(ifileName[0])
-            copy2(ifileName[0], dirname)
+            copy2(ifileName[0], KEY_DIR_PATH)
+            CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
             
         else:
             self.dragdrop.setText("Please select a key")
@@ -229,6 +235,21 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
         STUDENTWORKSOURCE = ifileName
+        print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)              #TODO: print out to log
+        CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, "Activity1.py") #NOTE: hardcoded because I wasn't getting this to set correctly from Open Key
+        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH)      #TODO: print out to log, or not
+        if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
+            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            print("dnt INITIALIZED")                                    #TODO: print out to log, or not
+            for root, dirs, files in os.walk(STUDENTWORKSOURCE):
+                for student_dir in dirs:
+                    for student_file in os.listdir(os.path.join(root, student_dir)):
+                        if not re.match(".*\.py.*", student_file) is None:
+                            print("ANALYZING", os.path.join(root, student_dir, student_file))            #TODO: print out to log
+                            dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+            print("DONE ANALYZING")                                                                  #TODO: print out to log
+            self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                        
 
     @pyqtSlot()
     def zipdialog_on_click(self):
