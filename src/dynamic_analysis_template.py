@@ -1,14 +1,13 @@
 import unittest
 import subprocess
 import sys
-from $assignment_instance_name import *
-
+try:
+    from $assignment_instance_name import *
+except:
+    print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")
 
 class DynamicAnalysis(unittest.TestCase):
     """ this class acts as a template for building an assignment's dynamic analysis suite"""
-
-    def need(self):
-        print("NEEEEEEED")
 
     def setUp(self):
         """ this method prepares the environment for testing"""
@@ -16,7 +15,10 @@ class DynamicAnalysis(unittest.TestCase):
 
     def test_main(self):
         """ this test method is designed to run the assignment script as main and capture the output"""
-        subprocess.run([sys.executable, "$assignment_instance"])
+        try:
+            subprocess.run([sys.executable, r"$assignment_instance"])
+        except:
+            print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")
 
 $method_test_stubs
 
