@@ -233,7 +233,7 @@ class App(QMainWindow):
     def grade_on_click(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
         print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
         self.resultArea.insertPlainText("Grading Directory: " + STUDENTWORKSOURCE + "\n")
