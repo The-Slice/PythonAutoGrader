@@ -50,8 +50,7 @@ class App(QMainWindow):
         self.optionBoxes.add('Dynamic Analysis',  
             { # Format for adding buttons and other components to dropdown
             #   'Button label' : [Constructor for component, component height, component width, listener]
-                '1': [QPushButton, 40, 20, self.openDirectory], 
-                '2': [QPushButton, 40, 20, self.openDirectory] #opendirectory is just an example
+                '1': [QPushButton, 40, 20, self.openDirectory] 
             }
         )
         for opt in self.optionBoxes.children:
