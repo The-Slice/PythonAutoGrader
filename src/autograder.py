@@ -181,6 +181,7 @@ class App(QMainWindow):
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
+        print(files)
         if (files and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -199,7 +200,8 @@ class App(QMainWindow):
                 zipfileName = re.search('[^/]+$', file)
                 zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
                 
-                with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                #print(os.path.abspath(zipfileName.group(0))
+                with ZipFile(os.path.abspath(zipfileName.group(0)) , 'r') as zippedObject:
                     zippedObject.extractall(zipfileNameParse)
                 
                 #file is moved to temp once zip file is extracted into its own filename			
