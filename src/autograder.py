@@ -197,8 +197,7 @@ class App(QMainWindow):
 
                 zipfileName = re.search('[^/]+$', file)
                 zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                
-                with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                with ZipFile(file , 'r') as zippedObject:
                     zippedObject.extractall(zipfileNameParse)
                 
                 #file is moved to temp once zip file is extracted into its own filename			
