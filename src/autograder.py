@@ -255,7 +255,8 @@ class App(QMainWindow):
                                 #print(os.path.join(root, student_dir, student_file))
                                 dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
                                 self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            except:
+                            except BaseException as e:
+                                print(e)
                                 self.resultArea.insertPlainText(student_dir + " failed to run\n")
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
