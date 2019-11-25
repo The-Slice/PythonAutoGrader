@@ -64,11 +64,7 @@ class App(QMainWindow):
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
         
-        gradeButton = QPushButton("Grade", self)
-        gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
-        gradeButton.clicked.connect(self.grade_on_click)
-        # need to connect this button to grade_button_click function
-        # if you want a gui element to exist in the scope of the program it must be declared as self
+
         self.resultArea = QPlainTextEdit(self)
 
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
@@ -117,6 +113,13 @@ class App(QMainWindow):
         labelA.adjustSize()
         labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
 
+        gradeButton = QPushButton("Grade", self)
+        gradeButton.resize(self.width*0.25-BORDERSIZE*3,gradeButton.height()*2)
+        gradeButton.move(BORDERSIZE, self.height - gradeButton.height() - BORDERSIZE)
+        gradeButton.clicked.connect(self.grade_on_click)
+        # need to connect this button to grade_button_click function
+        # if you want a gui element to exist in the scope of the program it must be declared as self
+
 
         self.dragdrop = KeyDrop('Drop key here', self)
         self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
@@ -137,9 +140,13 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
+        #s = os.path.realpath(__file__)
+        #s = s[0:s.find("\src")]
+        #s = s + "\\"+"target"
+        #ofileName = s
         ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
-        
+
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue           
