@@ -6,10 +6,10 @@ import sys
 import time
 from zipfile import ZipFile
 from shutil import copy2
-<<<<<<< HEAD
 from shutil import copy
-=======
->>>>>>> 0408658428d30fe2875b43c62a6551885b6d4db6
+import subprocess
+import pip
+import winshell
 from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -33,7 +33,7 @@ class MyWindow(QMainWindow):
 	
         
 		       
-        self.setWindowIcon(QIcon('.img/pythonBlugold.ico'))
+        self.setWindowIcon(QIcon('../img/pythonBlugold.ico'))
 		
         self.buildButton = QPushButton("Build", self)
         self.buildButton.setEnabled(False)
@@ -70,10 +70,21 @@ class MyWindow(QMainWindow):
 		
         self.show()
 	
+    def appendPlainText(self, text2Append, end='\n'):
+        current = self.resultArea.toPlainText()
+        new = current + end + text2Append
+        self.resultArea.setPlainText(new)
+        self.resultArea.update()
+        self.update()
+
     @pyqtSlot()
     def buildExecutable(self):
         SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
         REPOROOT = os.path.dirname(SRCROOT)
+        self.appendPlainText('Installing prerequisite modules ... ')
+        subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "pyreqs.txt")]);
+        self.appendPlainText("done", end='')
+        self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
             PyInstaller.__main__.run([
 			    '-F',
@@ -88,7 +99,7 @@ class MyWindow(QMainWindow):
 			    '--workpath', '%s' % self.path + '/workpath',
          	    '--specpath', '%s' % self.path,
             ])
-			
+        self.appendPlainText("done", end='')
         os.mkdir(os.path.join(self.path, "target"))
         os.mkdir(os.path.join(self.path, "img"))
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):
@@ -96,6 +107,14 @@ class MyWindow(QMainWindow):
                 os.path.join(REPOROOT, "img", filename),
                 os.path.join(self.path, "img", filename)
             )
+        desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
+        winshell.CreateShortcut(
+            Path=os.path.join(desktop, "AutoGrader.lnk"),
+            Target=os.path.join(self.path, 'bin', 'autograder.exe'),
+            Icon=(os.path.join(self.path, 'img', 'pythonBlugold.ico'), 0),
+            Description="Python AutoGrader",
+            StartIn=os.path.join(self.path, 'bin')
+        )
 		
 		
 	
