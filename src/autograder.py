@@ -10,6 +10,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from tester import *
+from commentSummary import CommentSummary 
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
 AUTOGRADER_PATH = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -43,8 +44,8 @@ class App(QMainWindow):
         self.optionBoxes.add('Comment Analysis', 
             { 
                 'Display Docstring': True, 
-                'Count Comments': False,
-                'Display Comments': True 
+                'Count Comments': False
+                #'Display Comments': True 
             }
         )
         self.optionBoxes.add('Dynamic Analysis',  
@@ -74,12 +75,12 @@ class App(QMainWindow):
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(qApp.quit)
 
-        openFile = QAction(QIcon('exit.png'), '&Open Zip(s)', self)        
+        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
         openFile.setStatusTip('Open Zip(s)')
         openFile.triggered.connect(self.zipdialog_on_click)
 
-        openDir = QAction(QIcon('exit.png'), '&Open Directory', self)        
+        openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
         openDir.triggered.connect(self.zipdirectory_on_click)
@@ -247,16 +248,16 @@ class App(QMainWindow):
                     for student_file in os.listdir(os.path.join(root, student_dir)):
                         filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
-                            #comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
-                            #comments.run()
+                            comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                            comments.run()
                             print("ANALYZING", os.path.join(root, student_dir, student_file))
                             print(student_dir)            #TODO: print out to log
-                            #try:
-                            print(os.path.join(root, student_dir, student_file))
-                            dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                            self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            #except:
-                            #self.resultArea.insertPlainText(student_dir + " failed to run\n")
+                            try:
+                                #print(os.path.join(root, student_dir, student_file))
+                                dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
+                            except:
+                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
             self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
