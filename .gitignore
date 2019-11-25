@@ -3,3 +3,4 @@ src/__pycache__/
 target/key/*
 target/temp/*
 .vscode/settings.json
+settings.json
