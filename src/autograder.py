@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import sys
+import multiprocessing
 from zipfile import ZipFile
 from shutil import copy2
 from guiutil import *
@@ -141,7 +142,7 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Select a Directory to Grade", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -254,6 +255,7 @@ class App(QMainWindow):
                         if not re.match(".*\.py.*", student_file) is None:
                             print("Analyzing: ", os.path.join(root, student_dir, student_file), file=self.resultArea)
                             comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                            print(filename)
                             comments.run()
                             try:
                                 dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
@@ -303,6 +305,7 @@ class KeyDrop(QLabel):
    
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     app = QApplication(sys.argv)
     app_icon = QIcon("path to file")
     app.setWindowIcon(app_icon)
