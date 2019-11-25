@@ -21,6 +21,10 @@ KEY_DIR_PATH = os.path.join(TARGET_DIR_PATH, "key")
 CURRENT_GRADING_KEY_PATH = None
 STUDENTWORKSOURCE = None
 
+class QOutputLog(QPlainTextEdit):
+    def write(self, string):
+        self.insertPlainText(string)
+
 class App(QMainWindow):
     
     def __init__(self, parent=None):
@@ -57,6 +61,7 @@ class App(QMainWindow):
         )
         for opt in self.optionBoxes.children:
             opt.dropdown.clicked.connect(opt.getExpandListener())
+    
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -69,28 +74,27 @@ class App(QMainWindow):
         gradeButton.clicked.connect(self.grade_on_click)
         # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
-        self.resultArea = QPlainTextEdit(self)
+        self.resultArea = QOutputLog(self)
 
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(qApp.quit)
 
-        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
-        openFile.setShortcut('Ctrl+O')
-        openFile.setStatusTip('Open Zip(s)')
-        openFile.triggered.connect(self.zipdialog_on_click)
-
         openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
         openDir.triggered.connect(self.zipdirectory_on_click)
 
+        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
+        openFile.setShortcut('Ctrl+O')
+        openFile.setStatusTip('Open Zip(s)')
+        openFile.triggered.connect(self.zipdialog_on_click)
+
         openKey = QAction(QIcon('exit.png'), '&Open Key', self)        
         openKey.setShortcut('Ctrl+F')
         openKey.setStatusTip('Open Key')
         openKey.triggered.connect(self.keydialog_on_click)
-
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -99,16 +103,13 @@ class App(QMainWindow):
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
-
-
-
         # text result area
         self.resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
         self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.resultArea.insertPlainText("Log of program status displayed below:\n")
+        print("Log of program status displayed below:\n", file=self.resultArea)
         self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
         self.resultArea.setReadOnly(True)
@@ -132,12 +133,12 @@ class App(QMainWindow):
     def setListener(self, button, function):
         button.clicked.connect(function)
 
-    #opens directory filled with students zipped assignments
+   #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -157,14 +158,13 @@ class App(QMainWindow):
                     return 
         
             #for each zip folder unzip the folder
-            for subdir, dirs, files in os.walk(ifileName):
-                for file in files:
-                    if(file.find('.zip') != -1):
+            for filename in os.listdir(ifileName):
+                    if(filename.endswith(".zip")):
 
-                        zipfileName = re.search('[^/]+$', file)
+                        zipfileName = re.search('[^/]+$', filename)
                         zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
                         
-                        with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                        with ZipFile(ifileName + "/" + filename , 'r') as zippedObject:
                             zippedObject.extractall(zipfileNameParse)
                         
                         #file is moved to temp once zip file is extracted into its own filename			
@@ -236,42 +236,29 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
-        print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
-        self.resultArea.insertPlainText("\nGrading Directory: " + STUDENTWORKSOURCE + "\n")
+        print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
-        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH + '\n')
+        print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            try:
-                dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            except Exception as e:
-                print(e)
-                while True:
-                    pass
-            print("dnt INITIALIZED")                              
+            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
                         filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
+                            print("Analyzing: ", os.path.join(root, student_dir, student_file), file=self.resultArea)
                             comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
                             print(filename)
                             comments.run()
-                            print("ANALYZING", os.path.join(root, student_dir, student_file))
-                            print(student_dir)            #TODO: print out to log
                             try:
-                                #print(os.path.join(root, student_dir, student_file))
                                 dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
                             except BaseException as e:
                                 print(e)
-                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
-                        print(student_file)
-            print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
-            self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                                print("Could not analyze:", student_dir, file=self.resultArea)
+            print(dnt.captured_output, file=self.resultArea)             #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
-
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
