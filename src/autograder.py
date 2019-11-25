@@ -198,8 +198,7 @@ class App(QMainWindow):
 
                 zipfileName = re.search('[^/]+$', file)
                 zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                
-                with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                with ZipFile(file , 'r') as zippedObject:
                     zippedObject.extractall(zipfileNameParse)
                 
                 #file is moved to temp once zip file is extracted into its own filename			
@@ -233,7 +232,7 @@ class App(QMainWindow):
     def grade_on_click(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
         print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
         self.resultArea.insertPlainText("\nGrading Directory: " + STUDENTWORKSOURCE + "\n")
@@ -260,6 +259,7 @@ class App(QMainWindow):
                                 self.resultArea.insertPlainText(student_dir + " failed to run\n")
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
+            print(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
             self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
 

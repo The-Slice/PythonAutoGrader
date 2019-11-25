@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
 
+DYNAMIC_ANALYSIS_TEMPLATE = 'import unittest\n import subprocess\n import sys\n try:\n\t from $assignment_instance_name import *\n except:\n\t print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\n class DynamicAnalysis(unittest.TestCase):\n\n\t def setUp(self):\n\t\tpass\n\n\t def test_main(self):\n\t\t try:\n\t\t\t subprocess.run([sys.executable, r"$assignment_instance"])\n\t\t except:\n\t\t\t print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n $method_test_stubs\n\n\t def tearDown(self):\n\t\t pass'
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
@@ -60,7 +61,8 @@ class Tester():
         sys.path.insert(0,self.tempdir)
         self.grading_key = grading_key                                                                  # keep the handle to the grading key
         self.captured_output = tempfile.TemporaryFile(mode="w+", delete=False)                          # a place to write a test's output to
-        dynamic_analysis_template = Template(open("dynamic_analysis_template.py", "r").read())          # load the generic unit test suite template
+        #dynamic_analysis_template = Template(open(os.path.join(parent_dir, "src", "dynamic_analysis_template.txt"), "r").read()) # load generic unit test suite
+        dynamic_analysis_template = Template(DYNAMIC_ANALYSIS_TEMPLATE)  # load generic unit test suite 
         self.method_defs = find_method_defs(self.grading_key)                                           # get all method defs from grading key
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
         self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 
