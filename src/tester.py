@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
 
-DYNAMIC_ANALYSIS_TEMPLATE = 'import unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\tsubprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+DYNAMIC_ANALYSIS_TEMPLATE = 'import unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\t$assignment_instance.main()#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """

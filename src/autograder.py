@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import sys
+import multiprocessing
 from zipfile import ZipFile
 from shutil import copy2
 from guiutil import *
@@ -241,7 +242,12 @@ class App(QMainWindow):
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH + '\n')
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            try:
+                dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            except Exception as e:
+                print(e)
+                while True:
+                    pass
             print("dnt INITIALIZED")                              
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
@@ -249,6 +255,7 @@ class App(QMainWindow):
                         filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
                             comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                            print(filename)
                             comments.run()
                             print("ANALYZING", os.path.join(root, student_dir, student_file))
                             print(student_dir)            #TODO: print out to log
@@ -306,6 +313,7 @@ class KeyDrop(QLabel):
    
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()
     app = QApplication(sys.argv)
     app_icon = QIcon("path to file")
     app.setWindowIcon(app_icon)
