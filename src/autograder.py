@@ -136,7 +136,7 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Select a Directory to Grade", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one

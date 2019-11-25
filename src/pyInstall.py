@@ -83,7 +83,7 @@ class MyWindow(QMainWindow):
         SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
         REPOROOT = os.path.dirname(SRCROOT)
         self.appendPlainText('Installing prerequisite modules ... ')
-        subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "pyreqs.txt")]);
+        subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "config\\pyreqs.txt")]);
         self.appendPlainText("done", end='')
         self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
