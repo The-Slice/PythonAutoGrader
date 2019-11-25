@@ -43,7 +43,7 @@ class App(QMainWindow):
         self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
         self.optionBoxes.add('Comment Analysis', 
             { 
-                'Display Docstring': True, 
+                'Display Docstring': False,
                 'Count Comments': False
                 #'Display Comments': True 
             }
