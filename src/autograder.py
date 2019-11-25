@@ -81,21 +81,20 @@ class App(QMainWindow):
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(qApp.quit)
 
-        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
-        openFile.setShortcut('Ctrl+O')
-        openFile.setStatusTip('Open Zip(s)')
-        openFile.triggered.connect(self.zipdialog_on_click)
-
         openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
         openDir.triggered.connect(self.zipdirectory_on_click)
 
+        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
+        openFile.setShortcut('Ctrl+O')
+        openFile.setStatusTip('Open Zip(s)')
+        openFile.triggered.connect(self.zipdialog_on_click)
+
         openKey = QAction(QIcon('exit.png'), '&Open Key', self)        
         openKey.setShortcut('Ctrl+F')
         openKey.setStatusTip('Open Key')
         openKey.triggered.connect(self.keydialog_on_click)
-
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -103,9 +102,6 @@ class App(QMainWindow):
         fileMenu.addAction(openFile)
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
-
-
-
 
         # text result area
         self.resultArea.resize(self.width*0.75, self.height*0.75)
@@ -137,12 +133,12 @@ class App(QMainWindow):
     def setListener(self, button, function):
         button.clicked.connect(function)
 
-    #opens directory filled with students zipped assignments
+   #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -162,14 +158,13 @@ class App(QMainWindow):
                     return 
         
             #for each zip folder unzip the folder
-            for subdir, dirs, files in os.walk(ifileName):
-                for file in files:
-                    if(file.find('.zip') != -1):
+            for filename in os.listdir(ifileName):
+                    if(filename.endswith(".zip")):
 
-                        zipfileName = re.search('[^/]+$', file)
+                        zipfileName = re.search('[^/]+$', filename)
                         zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
                         
-                        with ZipFile(zipfileName.group(0) , 'r') as zippedObject:
+                        with ZipFile(ifileName + "/" + filename , 'r') as zippedObject:
                             zippedObject.extractall(zipfileNameParse)
                         
                         #file is moved to temp once zip file is extracted into its own filename			
