@@ -10,6 +10,7 @@ from shutil import copy
 import subprocess
 import pip
 import winshell
+import pyshortcuts
 from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -93,7 +94,7 @@ class MyWindow(QMainWindow):
 			    'guiutil.py',
 			    'inlineCommentCounter.py',
 			    'tester.py',
-                '--windowed',
+                #'--windowed',
                 '--onefile',
 			    '--distpath', '%s/bin' % self.path,
 			    '--workpath', '%s' % self.path + '/workpath',
@@ -108,13 +109,22 @@ class MyWindow(QMainWindow):
                 os.path.join(self.path, "img", filename)
             )
         desktop = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Desktop')
-        winshell.CreateShortcut(
-            Path=os.path.join(desktop, "AutoGrader.lnk"),
-            Target=os.path.join(self.path, 'bin', 'autograder.exe'),
-            Icon=(os.path.join(self.path, 'img', 'pythonBlugold.ico'), 0),
-            Description="Python AutoGrader",
-            StartIn=os.path.join(self.path, 'bin')
+        pyshortcuts.make_shortcut(
+            os.path.join(self.path, "bin", "autograder.exe"),
+            name="AutoGrader",
+            description="Python AutoGrader",
+            terminal=False,
+            icon=os.path.join(self.path, 'img', 'pythonBlugold.ico'),
+            desktop=True,
+            startmenu=False
         )
+        #winshell.CreateShortcut(
+        #    Path=os.path.join(desktop, "AutoGrader.lnk"),
+        #    Target=os.path.join(self.path, 'bin', 'autograder.exe'),
+        #    Icon=(os.path.join(self.path, 'img', 'pythonBlugold.ico'), 0),
+        #    Description="Python AutoGrader",
+        #    StartIn=os.path.join(self.path, 'bin')
+        #)
 		
 		
 	

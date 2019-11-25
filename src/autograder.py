@@ -61,7 +61,7 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
-        self.setWindowIcon(QIcon('../img/pythonBlugold.ico'))
+        self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
         
         gradeButton = QPushButton("Grade", self)
         gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
