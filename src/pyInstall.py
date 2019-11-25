@@ -97,7 +97,6 @@ class MyWindow(QMainWindow):
                 'autograder.py',
 			    'commentSummary.py',
 			    'guiutil.py',
-			    'inlineCommentCounter.py',
 			    'tester.py',
                 #'--windowed',
                 '--onefile',
