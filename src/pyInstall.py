@@ -102,6 +102,8 @@ class MyWindow(QMainWindow):
             ])
         self.appendPlainText("done", end='')
         os.mkdir(os.path.join(self.path, "target"))
+        os.mkdir(os.path.join(self.path, "target", "key"))
+        os.mkdir(os.path.join(self.path, "target", 'temp'))
         os.mkdir(os.path.join(self.path, "img"))
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):
             shutil.copy(
