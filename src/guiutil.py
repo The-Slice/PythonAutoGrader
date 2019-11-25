@@ -81,7 +81,7 @@ class TestConfigOption:
 
         self.testCheck.move(xloc, yloc)
         self.dropdown.move(xloc + 140, yloc)
-        self.dropdown.setArrowType(Qt.RightArrow)
+        self.dropdown.setArrowType(Qt.LeftArrow)
         self.dropdown.show()
         self.testCheck.adjustSize()
         self.testCheck.show()
@@ -138,7 +138,7 @@ class TestConfigOption:
 
         else:
             self.collapsed = True
-            self.dropdown.setArrowType(Qt.RightArrow)
+            self.dropdown.setArrowType(Qt.LeftArrow)
             while len(self.tempbuttons):
                 temp = self.tempbuttons.pop()
                 button = temp[0]
