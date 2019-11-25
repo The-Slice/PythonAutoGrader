@@ -260,6 +260,7 @@ class App(QMainWindow):
                                 self.resultArea.insertPlainText(student_dir + " failed to run\n")
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
+            print(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
             self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
 
