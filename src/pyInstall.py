@@ -6,7 +6,10 @@ import sys
 import time
 from zipfile import ZipFile
 from shutil import copy2
+<<<<<<< HEAD
 from shutil import copy
+=======
+>>>>>>> 0408658428d30fe2875b43c62a6551885b6d4db6
 from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -87,7 +90,6 @@ class MyWindow(QMainWindow):
             ])
 			
         os.mkdir(os.path.join(self.path, "target"))
-        os.mkdir(os.path.join(self.path, "target", "key"))
         os.mkdir(os.path.join(self.path, "img"))
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):
             shutil.copy(
@@ -95,9 +97,6 @@ class MyWindow(QMainWindow):
                 os.path.join(self.path, "img", filename)
             )
 		
-        self.resultArea.setPlainText("autograder build successfull")
-        time.sleep(5)
-        sys.exit(app.exec_())
 		
 	
     def openDirectory(self):

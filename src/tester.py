@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
 
+DYNAMIC_ANALYSIS_TEMPLATE = 'import unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\tsubprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
@@ -32,7 +33,7 @@ def find_method_defs(fname):
                 params = groups[1].split(',')                        # separate the parameters from the method definition
                 for param in params:                                 # for each 'parameter'
                     if not param is "":                              # if the 'parameter' isn't just incident whitespace
-                        method_def = method_def + (param.strip(),)   # add the stripped parameter to the method definition tuple
+                        method_def = method_def + (param.strip().split("=")[0],)   # add the stripped parameter to the method definition tuple
             method_defs.append(method_def)                           # add the complete method definition tuple to the list
     return method_defs                                               # return the method definitions list
 
@@ -40,12 +41,12 @@ def generate_method_test_stubs(method_defs):
     """ this method generates unit test stubs for a list of method definitions """
     method_test_stubs = "\n"                                                  # make a string for method test stubs
     for method_def in method_defs:                                            # iterate through each method definition
-        method_test_stub = "    def test_" + method_def[0] + "(self):\n"      # begin method test stub with test method definition line
+        method_test_stub = "\tdef test_" + method_def[0] + "(self):\n"      # begin method test stub with test method definition line
         if len(method_def) > 1:                                               # if the method definition includes parameters
             method_params = method_def[1:]                                    # grab just the parameters from the method definition
             for method_param in method_params:                                # iterate through the method parameters
-                method_test_stub += "        " + method_param + " = None\n"   # simply initialize a variable for each parameter to None
-        method_test_stub += "        pass\n\n"                                # add a line to pass as default
+                method_test_stub += "\t\t" + method_param + " = None\n"   # simply initialize a variable for each parameter to None
+        method_test_stub += "\t\tpass\n\n"                                # add a line to pass as default
         method_test_stubs += method_test_stub                                 # append method test stub to the list 
     return method_test_stubs                                                  # return the method test stubs list
 
@@ -60,7 +61,8 @@ class Tester():
         sys.path.insert(0,self.tempdir)
         self.grading_key = grading_key                                                                  # keep the handle to the grading key
         self.captured_output = tempfile.TemporaryFile(mode="w+", delete=False)                          # a place to write a test's output to
-        dynamic_analysis_template = Template(open("dynamic_analysis_template.py", "r").read())          # load the generic unit test suite template
+        #dynamic_analysis_template = Template(open(os.path.join(parent_dir, "src", "dynamic_analysis_template.txt"), "r").read()) # load generic unit test suite
+        dynamic_analysis_template = Template(DYNAMIC_ANALYSIS_TEMPLATE)  # load generic unit test suite 
         self.method_defs = find_method_defs(self.grading_key)                                           # get all method defs from grading key
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
         self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 

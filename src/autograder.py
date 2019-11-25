@@ -43,7 +43,7 @@ class App(QMainWindow):
         self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
         self.optionBoxes.add('Comment Analysis', 
             { 
-                'Display Docstring': True, 
+                'Display Docstring': False,
                 'Count Comments': False
                 #'Display Comments': True 
             }
@@ -199,9 +199,7 @@ class App(QMainWindow):
 
                 zipfileName = re.search('[^/]+$', file)
                 zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                
-                #print(os.path.abspath(zipfileName.group(0))
-                with ZipFile(os.path.abspath(zipfileName.group(0)) , 'r') as zippedObject:
+                with ZipFile(file , 'r') as zippedObject:
                     zippedObject.extractall(zipfileNameParse)
                 
                 #file is moved to temp once zip file is extracted into its own filename			
@@ -235,7 +233,7 @@ class App(QMainWindow):
     def grade_on_click(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
         print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
         self.resultArea.insertPlainText("\nGrading Directory: " + STUDENTWORKSOURCE + "\n")
@@ -258,10 +256,12 @@ class App(QMainWindow):
                                 #print(os.path.join(root, student_dir, student_file))
                                 dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
                                 self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            except:
+                            except BaseException as e:
+                                print(e)
                                 self.resultArea.insertPlainText(student_dir + " failed to run\n")
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
+            print(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
             self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
 
