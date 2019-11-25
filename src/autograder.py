@@ -50,7 +50,7 @@ class App(QMainWindow):
         self.optionBoxes.add('Dynamic Analysis',  
             { # Format for adding buttons and other components to dropdown
             #   'Button label' : [Constructor for component, component height, component width, listener]
-                '1': [QPushButton, 40, 20, self.openDirectory] 
+                'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
             }
         )
         for opt in self.optionBoxes.children:
@@ -135,7 +135,7 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Select a Directory to Grade", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -214,11 +214,11 @@ class App(QMainWindow):
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
         
-        if (ifileName != ""):
+        if (ifileName[0] != ""):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
-            
+    
         else:
             self.dragdrop.setText("Please select a key")
 
@@ -235,21 +235,29 @@ class App(QMainWindow):
         ifileName = QFileDialog.getExistingDirectory(self,"Please Select an Input Directory", options=options)
         STUDENTWORKSOURCE = ifileName
         print("STUDENTWORKSOURCE:", STUDENTWORKSOURCE)
-        self.resultArea.insertPlainText("Grading Directory: " + STUDENTWORKSOURCE + "\n")
+        self.resultArea.insertPlainText("\nGrading Directory: " + STUDENTWORKSOURCE + "\n")
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
-        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH)
-        self.resultArea.insertPlainText("Key Directory: " + CURRENT_GRADING_KEY_PATH  + "\n")
+        print("CURRENT_GRADING_KEY_PATH:", CURRENT_GRADING_KEY_PATH + '\n')
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
             dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("dnt INITIALIZED")
-            self.resultArea.insertPlainText("dnt INITIALIZED"  + "\n")                                
+            print("dnt INITIALIZED")                              
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
+                        filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
-                            print("ANALYZING", os.path.join(root, student_dir, student_file))            #TODO: print out to log
+                            #comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                            #comments.run()
+                            print("ANALYZING", os.path.join(root, student_dir, student_file))
+                            print(student_dir)            #TODO: print out to log
+                            #try:
+                            print(os.path.join(root, student_dir, student_file))
                             dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                            self.resultArea.insertPlainText(student_dir + " ran successfully\n")
+                            #except:
+                            #self.resultArea.insertPlainText(student_dir + " failed to run\n")
+                        print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
             self.resultArea.insertPlainText(dnt.captured_output.read()) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
