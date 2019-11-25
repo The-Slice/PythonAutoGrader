@@ -8,6 +8,13 @@ from zipfile import ZipFile
 from shutil import copy2
 from shutil import copy
 import subprocess
+
+SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
+REPOROOT = os.path.dirname(SRCROOT)
+subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "config\\pyreqs.txt")]);
+
+
+
 import pip
 import winshell
 import pyshortcuts
@@ -80,10 +87,8 @@ class MyWindow(QMainWindow):
 
     @pyqtSlot()
     def buildExecutable(self):
-        SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
-        REPOROOT = os.path.dirname(SRCROOT)
+        
         self.appendPlainText('Installing prerequisite modules ... ')
-        subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "pyreqs.txt")]);
         self.appendPlainText("done", end='')
         self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
