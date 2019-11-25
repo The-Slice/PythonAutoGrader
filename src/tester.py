@@ -5,6 +5,7 @@ This module contains the necessary routines to perform analysis of a single-scri
 from importlib import import_module, invalidate_caches, reload
 import os
 import sys
+import io
 import unittest
 from shutil import copy2
 import tempfile
@@ -16,7 +17,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
 
-DYNAMIC_ANALYSIS_TEMPLATE = 'import unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\t$assignment_instance.main()#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
@@ -60,23 +61,23 @@ class Tester():
         self.tempdir= os.path.join(parent_dir, "target", "temp")
         sys.path.insert(0,self.tempdir)
         self.grading_key = grading_key                                                                  # keep the handle to the grading key
-        self.captured_output = tempfile.TemporaryFile(mode="w+", delete=False)                          # a place to write a test's output to
-        #dynamic_analysis_template = Template(open(os.path.join(parent_dir, "src", "dynamic_analysis_template.txt"), "r").read()) # load generic unit test suite
-        dynamic_analysis_template = Template(DYNAMIC_ANALYSIS_TEMPLATE)  # load generic unit test suite 
+        self.captured_output = ""                                                                       # a place to write a test's output to
+        dynamic_analysis_template = Template(DYNAMIC_ANALYSIS_TEMPLATE)                                 # load generic unit test suite 
         self.method_defs = find_method_defs(self.grading_key)                                           # get all method defs from grading key
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
         self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 
                                                                          method_test_stubs=self.method_test_stubs,
                                                                          assignment_instance_name="$assignment_instance_name",
                                                                          assignment_instance="$assignment_instance")  # substitute key fields
-        tmp_module = open(os.path.basename(self.grading_key).split('.')[0] + "_dynamic_analysis.py", "w+")           # open the unit test module instance
-        tmp_module.write(self.dynamic_analysis_template)                                            # write the new unit test module to the test module instance
-        tmp_module.close()                                                                              # close the test module instance's file
+        self.analyze_dynamically(self.grading_key)
+        self.key_output = self.captured_output
+        self.captured_output = ""
         #editor.edit("dynamic_analysis.py")
-        #reload(dynamic_analysis)                                                                # reload the test module instance so this Tester has access
 
     def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""
+        output_buffer = io.StringIO("")                                            # a place to write a test's output to
+        #sys.stdout = output_buffer
         copy2(target_script, self.tempdir)        
         target_script_name = os.path.basename(target_script).split('.py')[0]
         target_script_test_suite_path = os.path.join(self.tempdir, target_script_name + "_dynamic_analysis.py")
@@ -85,10 +86,17 @@ class Tester():
         target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(assignment_instance=os.path.abspath(target_script),
                                                                                            assignment_instance_name=target_script_name))
         target_script_test_suite.close()
+        print("BEFORE LOADING IMP")
         module = imp.load_source(target_script_test_suite_name, os.path.abspath(target_script_test_suite_path))
+        print("AFTER LOADING IMP")
         dynamic_analysis = getattr(module, "DynamicAnalysis")
         dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis)    # grab tests from the test module instance
-        unittest.TextTestRunner(stream=self.captured_output).run(dynamic_test)                          # run tests and pipe to captured_output
+        print("BEFORE MAKING TESTRUNNER")
+        testrunner = unittest.TextTestRunner(stream = sys.stdout)
+        print("BEFORE RUNNING TESTRUNNER")
+        testrunner.run(dynamic_test)                          # run tests and pipe to captured_output
+        sys.stdout = sys.__stdout__
+        print("CAPTURED_OUTPUT:\n", output_buffer.read(), "\nTUPTUO_DERUTPAC")
         try:
             os.remove(os.path.join(self.tempdir, os.path.basename(target_script_name)))
         except:

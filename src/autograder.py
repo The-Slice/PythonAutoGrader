@@ -52,7 +52,7 @@ class App(QMainWindow):
         self.optionBoxes.add('Dynamic Analysis',  
             { # Format for adding buttons and other components to dropdown
             #   'Button label' : [Constructor for component, component height, component width, listener]
-                'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
+                'Edit Key': [QPushButton, 80, 20, self.edit_key_on_click] 
             }
         )
         for opt in self.optionBoxes.children:
@@ -283,6 +283,10 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
+
+    @pyqtSlot()
+    def edit_key_on_click(self):
+        os.system('%s %s' % (os.getenv('EDITOR'), CURRENT_GRADING_KEY_PATH))
 
 class KeyDrop(QLabel):
 
