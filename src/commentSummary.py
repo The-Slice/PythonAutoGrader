@@ -11,9 +11,9 @@ class CommentSummary:
         if self.opts['Count Comments']:
             print("Number of comments: {}".format(str(len(comments))))
             print("Comments: ")
-        if self.opts['Display Comments']:
-            for comment in comments:
-                print("\t {}".format(comment))
+        #if self.opts['Display Comments'] is not None and self.opts['Display Comments']:
+        #    for comment in comments:
+        #        print("\t {}".format(comment))
 
     def comment_summary_docstrings(self, path):
         ''' This method performs a comment summary for all docstring comments in a file.
