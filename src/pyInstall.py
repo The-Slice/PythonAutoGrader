@@ -89,6 +89,8 @@ class MyWindow(QMainWindow):
 
     @pyqtSlot()
     def buildExecutable(self):
+        self.buildButton.setEnabled(False)
+        self.browseButton.setEnabled(False)
         
         self.appendPlainText('Installing prerequisite modules ... ')
         self.appendPlainText("done", end='')
@@ -133,6 +135,8 @@ class MyWindow(QMainWindow):
         #    Description="Python AutoGrader",
         #    StartIn=os.path.join(self.path, 'bin')
         #)
+
+        app.quit()
 		
 		
 	
