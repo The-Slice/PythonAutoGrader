@@ -188,7 +188,7 @@ class App(QMainWindow):
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
-        print(files)
+       
         if (files and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -243,33 +243,36 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
-        print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
-        keyFileName = os.path.basename(self.dragdrop.text())
-        CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
-        print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
-        if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            #self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
-            for root, dirs, files in os.walk(STUDENTWORKSOURCE):
-                for student_dir in dirs:
-                    for student_file in os.listdir(os.path.join(root, student_dir)):
-                        filename = os.path.join(root, student_dir, student_file)
-                        if not re.match(".*\.py.*", student_file) is None:
-                            comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
-                            comments.run()
-                            print("ANALYZING", os.path.join(root, student_dir, student_file))
-                            print(student_dir)            #TODO: print out to log
-                            try:
-                                #print(os.path.join(root, student_dir, student_file))
-                                self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            except BaseException as e:
-                                print(e)
-                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
-                                print("Could not analyze:", student_dir, file=self.resultArea)
-                        print(student_file)
-            print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(self.dnt.captured_output, file=self.resultArea) #NOTE: currently self.dnt.captured_output is a temporary file and is filled cumulatively
+        if ifileName:
+            print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
+            keyFileName = os.path.basename(self.dragdrop.text())
+            CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
+            print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
+            if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
+                #self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+                print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
+                for root, dirs, files in os.walk(STUDENTWORKSOURCE):
+                    for student_dir in dirs:
+                        for student_file in os.listdir(os.path.join(root, student_dir)):
+                            filename = os.path.join(root, student_dir, student_file)
+                            if not re.match(".*\.py.*", student_file) is None:
+                                comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                                comments.run()
+                                print("ANALYZING", os.path.join(root, student_dir, student_file))
+                                print(student_dir)            #TODO: print out to log
+                                try:
+                                    #print(os.path.join(root, student_dir, student_file))
+                                    self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                    self.resultArea.insertPlainText(student_dir + " ran successfully\n")
+                                except BaseException as e:
+                                    print(e)
+                                    self.resultArea.insertPlainText(student_dir + " failed to run\n")
+                                    print("Could not analyze:", student_dir, file=self.resultArea)
+                            print(student_file)
+                print("DONE ANALYZING")                                                                  #TODO: print out to log
+                print(self.dnt.captured_output, file=self.resultArea) #NOTE: currently self.dnt.captured_output is a temporary file and is filled cumulatively
+        else:
+            pass
 
     @pyqtSlot()
     def zipdialog_on_click(self):
