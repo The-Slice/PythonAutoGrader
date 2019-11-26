@@ -247,7 +247,7 @@ class App(QMainWindow):
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
             dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
+            print("Grading Key Output:\n", dnt.key_output, sep="", file=self.resultArea)
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
@@ -261,14 +261,12 @@ class App(QMainWindow):
                             try:
                                 #print(os.path.join(root, student_dir, student_file))
                                 dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
+                                print(student_dir , " Output:\n", dnt.captured_output, sep="", file=self.resultArea)
                             except BaseException as e:
                                 print(e)
-                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
                                 print("Could not analyze:", student_dir, file=self.resultArea)
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
 
     @pyqtSlot()
     def zipdialog_on_click(self):
