@@ -55,13 +55,18 @@ class MyWindow(QMainWindow):
         self.resultArea = QPlainTextEdit(self)
         self.resultArea.setReadOnly(True)
         self.resultArea.setPlainText("Add a path with browse. . .")
-		
-		
+
+        self.desktopShortcut = QCheckBox("Create desktop shortcut", self)
+        self.desktopShortcut.setChecked(True)
+        self.startbar = QCheckBox("Create start menu shortcut", self)
+        self.startbar.setChecked(True)
 					
         layout = QVBoxLayout()
         layout.addWidget(self.buildButton)
         layout.addWidget(self.resultArea)		
         layout.addWidget(self.browseButton)
+        layout.addWidget(self.desktopShortcut)
+        layout.addWidget(self.startbar)
 		
         		
 	    
@@ -130,8 +135,8 @@ class MyWindow(QMainWindow):
             description="Python AutoGrader",
             terminal=False,
             icon=os.path.join(self.path, 'img', 'pythonBlugold.ico'),
-            desktop=True,
-            startmenu=False
+            desktop=self.desktopShortcut.isChecked(),
+            startmenu=self.startbar.isChecked()
         )
         resp = QMessageBox.question(self, 'Install successful', "You may new exit the program", QMessageBox.Ok)
         app.quit()
