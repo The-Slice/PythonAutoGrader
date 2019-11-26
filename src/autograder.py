@@ -61,7 +61,6 @@ class App(QMainWindow):
         )
         for opt in self.optionBoxes.children:
             opt.dropdown.clicked.connect(opt.getExpandListener())
-    
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -69,32 +68,29 @@ class App(QMainWindow):
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
         
-        gradeButton = QPushButton("Grade", self)
-        gradeButton.move(BORDERSIZE, self.height-gradeButton.height()-BORDERSIZE)
-        gradeButton.clicked.connect(self.grade_on_click)
-        # need to connect this button to grade_button_click function
-        # if you want a gui element to exist in the scope of the program it must be declared as self
-        self.resultArea = QOutputLog(self)
+
+        self.resultArea = QPlainTextEdit(self)
 
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(qApp.quit)
 
-        openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
-        openDir.setShortcut('Ctrl+D')
-        openDir.setStatusTip('Open Directory')
-        openDir.triggered.connect(self.zipdirectory_on_click)
-
         openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
         openFile.setStatusTip('Open Zip(s)')
         openFile.triggered.connect(self.zipdialog_on_click)
 
+        openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
+        openDir.setShortcut('Ctrl+D')
+        openDir.setStatusTip('Open Directory')
+        openDir.triggered.connect(self.zipdirectory_on_click)
+
         openKey = QAction(QIcon('exit.png'), '&Open Key', self)        
         openKey.setShortcut('Ctrl+F')
         openKey.setStatusTip('Open Key')
         openKey.triggered.connect(self.keydialog_on_click)
+
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -102,6 +98,9 @@ class App(QMainWindow):
         fileMenu.addAction(openFile)
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
+
+
+
 
         # text result area
         self.resultArea.resize(self.width*0.75, self.height*0.75)
@@ -118,6 +117,13 @@ class App(QMainWindow):
         labelA.adjustSize()
         labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
 
+        gradeButton = QPushButton("Grade", self)
+        gradeButton.resize(self.width*0.25-BORDERSIZE*3,gradeButton.height()*2)
+        gradeButton.move(BORDERSIZE, self.height - gradeButton.height() - BORDERSIZE)
+        gradeButton.clicked.connect(self.grade_on_click)
+        # need to connect this button to grade_button_click function
+        # if you want a gui element to exist in the scope of the program it must be declared as self
+
 
         self.dragdrop = KeyDrop('Drop key here', self)
         self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
@@ -133,12 +139,16 @@ class App(QMainWindow):
     def setListener(self, button, function):
         button.clicked.connect(function)
 
-   #opens directory filled with students zipped assignments
+    #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
+        #s = os.path.realpath(__file__)
+        #s = s[0:s.find("\src")]
+        #s = s + "\\"+"target"
+        #ofileName = s
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -250,17 +260,26 @@ class App(QMainWindow):
                     for student_file in os.listdir(os.path.join(root, student_dir)):
                         filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
-                            print("Analyzing: ", os.path.join(root, student_dir, student_file), file=self.resultArea)
                             comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
                             print(filename)
                             comments.run()
+                            print("ANALYZING", os.path.join(root, student_dir, student_file))
+                            print(student_dir)            #TODO: print out to log
                             try:
+                                #print(os.path.join(root, student_dir, student_file))
                                 self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
                             except BaseException as e:
                                 print(e)
+                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
                                 print("Could not analyze:", student_dir, file=self.resultArea)
-            print(self.dnt.captured_output, file=self.resultArea)             #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                        #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                        print(student_file)
+            print("DONE ANALYZING")                                                                  #TODO: print out to log
+            print(self.dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+            self.resultArea.insertPlainText(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
+
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
