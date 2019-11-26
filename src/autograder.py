@@ -79,11 +79,17 @@ class App(QMainWindow):
         self.docstringButton = QPushButton("Display Docstring", self)
         self.docstringButton.setCheckable(True)
 		
+        self.docCountButton = QPushButton("Count Docstrings", self)
+        self.docCountButton.setCheckable(True)
+		
         self.commentButton = QPushButton("Count Comments", self)
         self.commentButton.setCheckable(True)
 
-        self.dynamicButton =QPushButton("Dynamic Analysis", self)
+        self.dynamicButton = QPushButton("Dynamic Analysis", self)
         self.dynamicButton.setCheckable(True)
+		
+        self.editDynamicButton = QPushButton("Edit", self)
+        self.editDynamicButton.hide()
 		
 		
 		
@@ -138,7 +144,8 @@ class App(QMainWindow):
         self.resultArea.setReadOnly(True)
 
         keyLabel = QLabel('Assignment Key:', self)
-        #toggleLabel = QLabel('Toggle:', self)
+        toggleLabel = QLabel('Toggle:', self)
+        lineLabel = QLabel('_________________', self)
 
         # labelA.adjustSize()
         # labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
@@ -172,12 +179,17 @@ class App(QMainWindow):
         grid.addWidget(keyLabel,0,1)
         grid.addWidget(self.dragdrop,1,1)
 		
-        #grid.addWidget(toggleLabel,3,0)
-        grid.addWidget(self.docstringButton,0,0)
-        grid.addWidget(self.commentButton,1,0)
-        grid.addWidget(self.dynamicButton,2,0)
-        grid.addWidget(gradeButton, 6, 0)
-        grid.addWidget(self.resultArea, 2, 1, 5, 1)
+        grid.addWidget(toggleLabel,0,0)
+        grid.addWidget(self.docstringButton,1,0)
+        grid.addWidget(self.docCountButton,2,0)
+        grid.addWidget(self.commentButton,3,0)
+        grid.addWidget(lineLabel,4,0)
+        grid.addWidget(self.dynamicButton,5,0)
+		
+        grid.addWidget(self.editDynamicButton, 6,0)		
+		
+        grid.addWidget(gradeButton, 21, 0)
+        grid.addWidget(self.resultArea, 2, 1, 20, 1)
         mainWidget.setLayout(grid)
 		
         # mainGrid = QGridLayout()
@@ -187,6 +199,14 @@ class App(QMainWindow):
 
         mainWidget.setGeometry(80, 100, 700, 550)
         self.setCentralWidget(mainWidget)		
+		
+        if(self.dynamicButton.isChecked):
+            self.editDynamicButton.show()							
+													
+									
+		
+		
+		
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
@@ -314,10 +334,6 @@ class App(QMainWindow):
         f.write("I'm putting stuff in the log")
         f.close()
 		
-        if(self.docstringButton.isChecked):
-		
-            self.resultArea.insertPlainText("docstringButton checked")
-		
         
 
 
@@ -334,6 +350,16 @@ class App(QMainWindow):
                         filename = os.path.join(root, student_dir, student_file)
                         if not re.match(".*\.py.*", student_file) is None:
                             comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                            
+							
+                            
+							
+							
+                            if(self.docstringButton.isChecked):
+                                print(comments.run())							
+							
+							
+							
                             print(filename)
                             comments.run()
                             print("ANALYZING", os.path.join(root, student_dir, student_file))
