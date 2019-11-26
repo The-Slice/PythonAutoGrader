@@ -56,7 +56,7 @@ class App(QMainWindow):
         self.optionBoxes.add('Dynamic Analysis',  
             { # Format for adding buttons and other components to dropdown
             #   'Button label' : [Constructor for component, component height, component width, listener]
-                'Edit Key': [QPushButton, 80, 20, self.edit_key_on_click] 
+                'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
             }
         )
         for opt in self.optionBoxes.children:
@@ -68,8 +68,7 @@ class App(QMainWindow):
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
         
-
-        self.resultArea = QPlainTextEdit(self)
+        self.resultArea = QOutputLog(self)
 
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
@@ -144,11 +143,7 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        #s = os.path.realpath(__file__)
-        #s = s[0:s.find("\src")]
-        #s = s + "\\"+"target"
-        #ofileName = s
-        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -230,8 +225,6 @@ class App(QMainWindow):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
-            print("Grading key:", CURRENT_GRADING_KEY_PATH)
-            self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
     
         else:
             self.dragdrop.setText("Please select a key")
@@ -253,8 +246,8 @@ class App(QMainWindow):
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-
-            print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
+            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
@@ -267,18 +260,15 @@ class App(QMainWindow):
                             print(student_dir)            #TODO: print out to log
                             try:
                                 #print(os.path.join(root, student_dir, student_file))
-                                self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
                                 self.resultArea.insertPlainText(student_dir + " ran successfully\n")
                             except BaseException as e:
                                 print(e)
                                 self.resultArea.insertPlainText(student_dir + " failed to run\n")
                                 print("Could not analyze:", student_dir, file=self.resultArea)
-                        #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(self.dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
-            self.resultArea.insertPlainText(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
-                        
+            print(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
 
     @pyqtSlot()
     def zipdialog_on_click(self):
@@ -291,10 +281,6 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
-
-    @pyqtSlot()
-    def edit_key_on_click(self):
-        self.dnt.edit_template(CURRENT_GRADING_KEY_PATH)
 
 class KeyDrop(QLabel):
 

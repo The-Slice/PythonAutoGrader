@@ -1,7 +1,31 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import os
 from functools import partial
+
+class StringEditor:
+
+    def __init__(self, filePath=None):
+        self.fname = None
+        if filePath is None:
+            print("Ye!")
+            self.fname = 'stredit.txt'
+        else:
+            self.fname = filePath
+        
+    def edit(self, string2edit):
+        print('editing')
+        retval = None
+        with open(self.fname, 'w') as edit:
+            edit.write(string2edit)
+        print('written')
+        print(os.getenv('EDITOR'))
+        os.system(self.fname)
+        with open(self.fname, 'r') as edited:
+            retval = edited.read()
+        os.remove(self.fname)
+        return retval
 
 class TestConfigOptionBox:
     """
@@ -157,4 +181,3 @@ class TestConfigOption:
         for option in self.options:
             opts.append(option)
         return options
-
