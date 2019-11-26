@@ -1,7 +1,31 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import os
 from functools import partial
+
+class StringEditor:
+
+    def __init__(self, filePath=None):
+        self.fname = None
+        if filePath is None:
+            print("Ye!")
+            self.fname = 'stredit.txt'
+        else:
+            self.fname = filePath
+        
+    def edit(self, string2edit):
+        print('editing')
+        retval = None
+        with open(self.fname, 'w') as edit:
+            edit.write(string2edit)
+        print('written')
+        print(os.getenv('EDITOR'))
+        os.system(self.fname)
+        with open(self.fname, 'r') as edited:
+            retval = edited.read()
+        os.remove(self.fname)
+        return retval
 
 class TestConfigOptionBox:
     """
@@ -57,8 +81,7 @@ class TestConfigOptionBox:
                 if opt.collapsed:
                     self.children[num + 1].shiftUp(low + 20)
                 else:
-                    self.children[num + 1].shiftDown(low + 25)
-
+                    self.children[num + 1].shiftDown(low + 25)        
 
 class TestConfigOption:
     def __init__(self, name, xloc, yloc, parent, opts=None, opsbox=None):
@@ -96,40 +119,55 @@ class TestConfigOption:
         self.testCheck.move(self.x, y)
         self.dropdown.move(self.x + 140, y)
         for temp in self.tempbuttons:
-            self.y += 17
-            temp.move(self.x + 10, self.y)
+            self.y += temp[1]
+            temp[0].move(self.x + 10, self.y)
     
     def shiftUp(self, y):
         self.y = y
         self.testCheck.move(self.x, y)
         self.dropdown.move(self.x + 140, y)
         for temp in self.tempbuttons:
-            self.y += 17
-            temp.move(self.x + 10, self.y)
+            self.y += temp[1]
+            temp[0].move(self.x + 10, self.y)
 
 
-    def display_opts(self):
+    def display_opts(self): #opts{name : [type constructor]}
         if self.collapsed:
             self.dropdown.setArrowType(Qt.DownArrow)
             for num, option in enumerate(self.options):
-                self.y += 17
-                temp = QCheckBox(option, self.parent)
-                if self.options[option]:
-                    temp.setChecked(True)
-                temp.move (self.x + 10, self.y)
-                temp.show()
-                temp.adjustSize()
-                self.parent.setListener(temp, partial(self.toggleOpts, option))
-                self.tempbuttons.append(temp)
-            self.parent.show()
+                yChange = None
+                opt = self.options[option]
+                if not isinstance(opt, list):
+                    self.y += 17
+                    yChange = 17
+                    temp = QCheckBox(option, self.parent)
+                    if self.options[option]:
+                        temp.setChecked(True)
+                    temp.move (self.x + 10, self.y)
+                    temp.show()
+                    temp.adjustSize()
+                    self.parent.setListener(temp, partial(self.toggleOpts, option))
+                else:
+                    self.y += opt[2]
+                    yChange = opt[2]
+                    temp = opt[0](option, self.parent)
+                    temp.move(self.x+15, self.y)
+                    temp.setFixedSize(opt[1],opt[2])
+                    temp.show()
+                    self.parent.setListener(temp, opt[3])
+                self.tempbuttons.append([temp, yChange])
+                self.parent.show()
+                
             self.collapsed = False
+
         else:
             self.collapsed = True
             self.dropdown.setArrowType(Qt.LeftArrow)
             while len(self.tempbuttons):
-                button = self.tempbuttons.pop()
+                temp = self.tempbuttons.pop()
+                button = temp[0]
                 button.hide()
-                self.y -= 17
+                self.y -= temp[1]
         self.opsbox.reshape()
 
     def toggleOpts(self, name):
@@ -143,4 +181,3 @@ class TestConfigOption:
         for option in self.options:
             opts.append(option)
         return options
-
