@@ -301,7 +301,7 @@ class App(QMainWindow):
     def keydialog_on_click(self):
         self.openKeyDialog()
 
-    # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' trigers it
+    # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' triggers it
     @pyqtSlot()
     def closeAndDeleteTemp(self):
         folder = '../target/temp'
