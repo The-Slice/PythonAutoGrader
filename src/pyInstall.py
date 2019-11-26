@@ -94,23 +94,30 @@ class MyWindow(QMainWindow):
         self.appendPlainText("done", end='')
         self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
-            PyInstaller.__main__.run([
-			    '-F',
-                'autograder.py',
-			    'commentSummary.py',
-			    'guiutil.py',
-			    'tester.py',
-                #'--windowed',
-                '--onefile',
-			    '--distpath', '%s/bin' % self.path,
-			    '--workpath', '%s' % self.path + '/workpath',
-         	    '--specpath', '%s' % self.path,
-            ])
+            try:
+                PyInstaller.__main__.run([
+                    '-F',
+                    'autograder.py',
+                    'commentSummary.py',
+                    'guiutil.py',
+                    'tester.py',
+                    #'--windowed',
+                    '--onefile',
+                    '--distpath', '%s/bin' % self.path,
+                    '--workpath', '%s' % self.path + '/workpath',
+                    '--specpath', '%s' % self.path,
+                ])
+            except:
+                QMessageBox.question(self, 'Install unsuccessful', "Try picking a new install location", QMessageBox.Ok)
+                app.exit()
         self.appendPlainText("done", end='')
-        os.mkdir(os.path.join(self.path, "target"))
-        os.mkdir(os.path.join(self.path, "target", "key"))
-        os.mkdir(os.path.join(self.path, "target", 'temp'))
-        os.mkdir(os.path.join(self.path, "img"))
+        try:
+            os.mkdir(os.path.join(self.path, "target"))
+            os.mkdir(os.path.join(self.path, "target", "key"))
+            os.mkdir(os.path.join(self.path, "target", 'temp'))
+            os.mkdir(os.path.join(self.path, "img"))
+        except:
+            pass
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):
             shutil.copy(
                 os.path.join(REPOROOT, "img", filename),
@@ -126,13 +133,8 @@ class MyWindow(QMainWindow):
             desktop=True,
             startmenu=False
         )
-        #winshell.CreateShortcut(
-        #    Path=os.path.join(desktop, "AutoGrader.lnk"),
-        #    Target=os.path.join(self.path, 'bin', 'autograder.exe'),
-        #    Icon=(os.path.join(self.path, 'img', 'pythonBlugold.ico'), 0),
-        #    Description="Python AutoGrader",
-        #    StartIn=os.path.join(self.path, 'bin')
-        #)
+        resp = QMessageBox.question(self, 'Install successful', "You may new exit the program", QMessageBox.Ok)
+        app.quit()
 		
 		
 	
