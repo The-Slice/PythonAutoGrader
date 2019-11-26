@@ -28,7 +28,6 @@ class QOutputLog(QPlainTextEdit):
         self.insertPlainText(string)
 
 class App(QMainWindow):
-    
     def __init__(self, parent=None):
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
@@ -72,10 +71,11 @@ class App(QMainWindow):
         
         self.resultArea = QOutputLog(self)
 
-        exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
+        #  exitAct = QAction(QIcon('exit.png'), '&Exit', self)
+        exitAct = QAction("Quit",self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
-        exitAct.triggered.connect(self.closeAndDeleteTemp)
+        exitAct.triggered.connect(self.close)
 
         openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
@@ -303,7 +303,7 @@ class App(QMainWindow):
 
     # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' triggers it
     @pyqtSlot()
-    def closeAndDeleteTemp(self):
+    def closeEvent(self, event):
         folder = '../target/temp'
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
@@ -344,9 +344,6 @@ class KeyDrop(QLabel):
                 shutil.rmtree(dirname)
                 os.mkdir(dirname)
                 copy2(path, dirname)
-
-
-   
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
