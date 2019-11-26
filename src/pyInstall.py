@@ -99,19 +99,25 @@ class MyWindow(QMainWindow):
         self.appendPlainText("done", end='')
         self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
+            args = [
+                '-F',
+                'autograder.py',
+                'commentSummary.py',
+                'guiutil.py',
+                'tester.py',
+                '--onefile',
+                '--distpath', '%s/bin' % self.path,
+                '--workpath', '%s' % self.path + '/workpath',
+                '--specpath', '%s' % self.path,
+                '--windowed'
+            ]
             try:
-                PyInstaller.__main__.run([
-                    '-F',
-                    'autograder.py',
-                    'commentSummary.py',
-                    'guiutil.py',
-                    'tester.py',
-                    #'--windowed',
-                    '--onefile',
-                    '--distpath', '%s/bin' % self.path,
-                    '--workpath', '%s' % self.path + '/workpath',
-                    '--specpath', '%s' % self.path,
-                ])
+                if sys.argv[1] == '--debug':
+                    args.pop()
+            except IndexError:
+                pass
+            try:
+                PyInstaller.__main__.run(args)
             except:
                 QMessageBox.question(self, 'Install unsuccessful', "Try picking a new install location", QMessageBox.Ok)
                 app.exit()
