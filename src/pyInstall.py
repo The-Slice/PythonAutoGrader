@@ -94,6 +94,8 @@ class MyWindow(QMainWindow):
 
     @pyqtSlot()
     def buildExecutable(self):
+        self.buildButton.setEnabled(False)
+        self.browseButton.setEnabled(False)
         
         self.appendPlainText('Installing prerequisite modules ... ')
         self.appendPlainText("done", end='')
