@@ -68,8 +68,7 @@ class App(QMainWindow):
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
         
-
-        self.resultArea = QPlainTextEdit(self)
+        self.resultArea = QOutputLog(self)
 
         exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAct.setShortcut('Ctrl+Q')
@@ -144,11 +143,7 @@ class App(QMainWindow):
 	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        #s = os.path.realpath(__file__)
-        #s = s[0:s.find("\src")]
-        #s = s + "\\"+"target"
-        #ofileName = s
-        ifileName = QFileDialog.getExistingDirectory(self,"Please select and Input Directory", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
         ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
         
 		#check if temp folder is created, if yes replace with new one
@@ -274,8 +269,6 @@ class App(QMainWindow):
                         print(student_file)
             print("DONE ANALYZING")                                                                  #TODO: print out to log
             print(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
-            self.resultArea.insertPlainText(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
-                        
 
     @pyqtSlot()
     def zipdialog_on_click(self):
