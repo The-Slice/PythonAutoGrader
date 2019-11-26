@@ -4,6 +4,8 @@ import re
 import shutil
 import sys
 import multiprocessing
+import time
+import glob
 from zipfile import ZipFile
 from shutil import copy2
 from guiutil import *
@@ -26,7 +28,6 @@ class QOutputLog(QPlainTextEdit):
         self.insertPlainText(string)
 
 class App(QMainWindow):
-    
     def __init__(self, parent=None):
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
@@ -70,10 +71,11 @@ class App(QMainWindow):
         
         self.resultArea = QOutputLog(self)
 
-        exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
+        #  exitAct = QAction(QIcon('exit.png'), '&Exit', self)
+        exitAct = QAction("Quit",self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
-        exitAct.triggered.connect(qApp.quit)
+        exitAct.triggered.connect(self.close)
 
         openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
@@ -241,6 +243,23 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
+
+        # this code produces an output txt file that is named the dir chosen and also time stamped
+        resultFileName = ifileName
+        index = resultFileName.rfind('/') + 1  # Finds last instance of /
+        resultFileName = resultFileName[index:]  # Substring after last /
+        localtime = time.asctime(time.localtime(time.time()))
+        localtime = localtime.replace(":", "")
+        resultsPath = "../results/" + resultFileName + "" + localtime + ".txt"
+        f = open(resultsPath, "w")
+
+        # This is where we would start a stream or keep using f.write() to put results
+        # These lines of code should be moved to the try with the prototype f.write()
+        # Successful compile Prototype : f.write(student_dir + "Method 1 Result:"Pass + "Method 2 Result:"Fail + "Metod X Result:" + "Score:" #ofPasses/#ofMethods)
+        # Failed compile Prototype : f.write(student_dir + " code does not compile... "+"Score:"0/#ofMethods)
+        f.write("I'm putting stuff in the log")
+        f.close()
+
         print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
@@ -282,6 +301,23 @@ class App(QMainWindow):
     def keydialog_on_click(self):
         self.openKeyDialog()
 
+    # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' triggers it
+    @pyqtSlot()
+    def closeEvent(self, event):
+        folder = '../target/temp'
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if re.match(".*\.gitkeep.*",filename):
+                    pass
+                elif os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+        qApp.quit()
+
 class KeyDrop(QLabel):
 
     def __init__(self, title, parent):
@@ -308,7 +344,6 @@ class KeyDrop(QLabel):
                 shutil.rmtree(dirname)
                 os.mkdir(dirname)
                 copy2(path, dirname)
-   
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
