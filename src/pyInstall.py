@@ -129,6 +129,8 @@ class MyWindow(QMainWindow):
             os.mkdir(os.path.join(self.path, "target", "key"))
             os.mkdir(os.path.join(self.path, "target", 'temp'))
             os.mkdir(os.path.join(self.path, "img"))
+            os.mkdir(os.path.join(self.path, "results"))
+
         except:
             pass
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):

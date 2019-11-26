@@ -251,8 +251,9 @@ class App(QMainWindow):
         resultFileName = resultFileName[index:]  # Substring after last /
         localtime = time.asctime(time.localtime(time.time()))
         localtime = localtime.replace(":", "")
-        resultsPath = "../results/" + resultFileName + "" + localtime + ".txt"
-        f = open(resultsPath, "w")
+        resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName +""+ localtime + '.txt')
+        print(resultsPath)
+        f = open(resultsPath, "w+")
 
         # This is where we would start a stream or keep using f.write() to put results
         # These lines of code should be moved to the try with the prototype f.write()
@@ -315,6 +316,8 @@ class App(QMainWindow):
     @pyqtSlot()
     def closeEvent(self, event):
         folder = '../target/temp'
+        folder = os.path.join(TARGET_DIR_PATH, 'temp')
+
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
