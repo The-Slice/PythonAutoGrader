@@ -4,6 +4,7 @@ import re
 import shutil
 import sys
 import multiprocessing
+import time
 from zipfile import ZipFile
 from shutil import copy2
 from guiutil import *
@@ -241,6 +242,23 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
+
+        # this code produces an output txt file that is named the dir chosen and also time stamped
+        resultFileName = ifileName
+        index = resultFileName.rfind('/') + 1  # Finds last instance of /
+        resultFileName = resultFileName[index:]  # Substring after last /
+        localtime = time.asctime(time.localtime(time.time()))
+        localtime = localtime.replace(":", "")
+        resultsPath = "../results/" + resultFileName + "" + localtime + ".txt"
+        f = open(resultsPath, "w")
+
+        # This is where we would start a stream or keep using f.write() to put results
+        # These lines of code should be moved to the try with the prototype f.write()
+        # Successful compile Prototype : f.write(student_dir + "Method 1 Result:"Pass + "Method 2 Result:"Fail + "Metod X Result:" + "Score:" #ofPasses/#ofMethods)
+        # Failed compile Prototype : f.write(student_dir + " code does not compile... "+"Score:"0/#ofMethods)
+        f.write("I'm putting stuff in the log")
+        f.close()
+
         print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
