@@ -1,7 +1,27 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+import os
 from functools import partial
+
+class StringEditor:
+
+    def __init__(self, filePath=None):
+        self.fname = None
+        if filePath is None:
+            self.fname = 'stredit.txt'
+        else:
+            self.fname = filePath
+        
+    def edit(self, string2edit):
+        retval = None
+        with open(self.fname, 'w') as edit:
+            edit.write(string2edit)
+        os.system(self.fname)
+        with open(self.fname, 'r') as edited:
+            retval = edited.read()
+        os.remove(self.fname)
+        return retval
 
 class TestConfigOptionBox:
     """
@@ -81,7 +101,7 @@ class TestConfigOption:
 
         self.testCheck.move(xloc, yloc)
         self.dropdown.move(xloc + 140, yloc)
-        self.dropdown.setArrowType(Qt.LeftArrow)
+        self.dropdown.setArrowType(Qt.RightArrow)
         self.dropdown.show()
         self.testCheck.adjustSize()
         self.testCheck.show()
@@ -121,6 +141,7 @@ class TestConfigOption:
                         temp.setChecked(True)
                     temp.move (self.x + 10, self.y)
                     temp.show()
+                    temp.adjustSize()
                     self.parent.setListener(temp, partial(self.toggleOpts, option))
                 else:
                     self.y += opt[2]
@@ -137,7 +158,7 @@ class TestConfigOption:
 
         else:
             self.collapsed = True
-            self.dropdown.setArrowType(Qt.LeftArrow)
+            self.dropdown.setArrowType(Qt.RightArrow)
             while len(self.tempbuttons):
                 temp = self.tempbuttons.pop()
                 button = temp[0]
@@ -156,4 +177,3 @@ class TestConfigOption:
         for option in self.options:
             opts.append(option)
         return options
-

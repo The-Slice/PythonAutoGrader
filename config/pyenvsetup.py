@@ -1,3 +1,4 @@
 import subprocess
+import pip
 
-subprocess.run(["pip", "install", "-r", "pyreqs.txt"]);
+subprocess.run(["python", "-m", "pip", "install", "-r", "pyreqs.txt"]);

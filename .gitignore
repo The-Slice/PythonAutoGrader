@@ -1,2 +1,7 @@
 src/__pycache__/
 *.pyc
+target/key/*
+target/temp/*
+.vscode/settings.json
+settings.json
+results/*
