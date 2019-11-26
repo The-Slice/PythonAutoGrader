@@ -57,7 +57,7 @@ class App(QMainWindow):
         self.optionBoxes.add('Dynamic Analysis',  
             { # Format for adding buttons and other components to dropdown
             #   'Button label' : [Constructor for component, component height, component width, listener]
-                'Edit Key': [QPushButton, 80, 20, self.editkey_on_click] 
+                'Edit Key': [QPushButton, 80, 20, self.editkey_on_click]
             }
         )
         for opt in self.optionBoxes.children:
@@ -189,7 +189,7 @@ class App(QMainWindow):
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
-       
+
         if (files and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -228,7 +228,7 @@ class App(QMainWindow):
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
             self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-    
+
         else:
             self.dragdrop.setText("Please select a key")
 
@@ -261,11 +261,11 @@ class App(QMainWindow):
         f.write("I'm putting stuff in the log")
         f.close()
 
-            print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
-            keyFileName = os.path.basename(self.dragdrop.text())
-            CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
-            print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
-            if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
+        print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
+        keyFileName = os.path.basename(self.dragdrop.text())
+        CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
+        print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
+        if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
                 #self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
                 print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
                 for root, dirs, files in os.walk(STUDENTWORKSOURCE):
@@ -302,7 +302,7 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
-    
+
     @pyqtSlot()
     def editkey_on_click(self):
         se = StringEditor()
@@ -311,7 +311,7 @@ class App(QMainWindow):
         else:
             self.dnt.dynamic_analysis_template = se.edit(self.dnt.dynamic_analysis_template)
 
-    # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' triggers it
+    # Method to clear Temp Folder before exiting application
     @pyqtSlot()
     def closeEvent(self, event):
         folder = '../target/temp'
