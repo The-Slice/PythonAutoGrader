@@ -73,6 +73,14 @@ class Tester():
         self.key_output = self.captured_output
         self.captured_output = ""
         #editor.edit("dynamic_analysis.py")
+    
+    def edit_template(self, keypath):
+        with open('./tmpkey.txt', 'w') as key:
+            key.write(DYNAMIC_ANALYSIS_TEMPLATE)
+        os.system('%s %s' % (os.getenv('EDITOR'), './tmpkey.txt'))
+        with open('./tmpkey.txt') as key:
+            DYNAMIC_ANALYSIS_TEMPLATE = key.read()
+
 
     def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""

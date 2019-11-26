@@ -220,6 +220,8 @@ class App(QMainWindow):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
+            print("Grading key:", CURRENT_GRADING_KEY_PATH)
+            self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
     
         else:
             self.dragdrop.setText("Please select a key")
@@ -241,8 +243,8 @@ class App(QMainWindow):
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
+
+            print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     for student_file in os.listdir(os.path.join(root, student_dir)):
@@ -253,11 +255,11 @@ class App(QMainWindow):
                             print(filename)
                             comments.run()
                             try:
-                                dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
                             except BaseException as e:
                                 print(e)
                                 print("Could not analyze:", student_dir, file=self.resultArea)
-            print(dnt.captured_output, file=self.resultArea)             #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+            print(self.dnt.captured_output, file=self.resultArea)             #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
                         
     @pyqtSlot()
     def zipdialog_on_click(self):
@@ -273,7 +275,7 @@ class App(QMainWindow):
 
     @pyqtSlot()
     def edit_key_on_click(self):
-        os.system('%s %s' % (os.getenv('EDITOR'), CURRENT_GRADING_KEY_PATH))
+        self.dnt.edit_template(CURRENT_GRADING_KEY_PATH)
 
 class KeyDrop(QLabel):
 

@@ -84,6 +84,8 @@ class MyWindow(QMainWindow):
         self.resultArea.setPlainText(new)
         self.resultArea.update()
         self.update()
+        self.resultArea.repaint()
+        self.repaint()
 
     @pyqtSlot()
     def buildExecutable(self):
