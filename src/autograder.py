@@ -13,6 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from tester import *
+from strtools import *
 from commentSummary import CommentSummary 
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
@@ -227,7 +228,8 @@ class App(QMainWindow):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
-            self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+            self.dnt = Tester(AUTOGRADER_PATH)
+            self.dnt.set_grading_key(CURRENT_GRADING_KEY_PATH)
 
         else:
             self.dragdrop.setText("Please select a key")
@@ -252,7 +254,6 @@ class App(QMainWindow):
         localtime = time.asctime(time.localtime(time.time()))
         localtime = localtime.replace(":", "")
         resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName +""+ localtime + '.txt')
-        print(resultsPath)
         f = open(resultsPath, "w+")
 
         # This is where we would start a stream or keep using f.write() to put results
@@ -267,8 +268,8 @@ class App(QMainWindow):
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-                #self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-                print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
+                print("Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
+                key_output_tokens = self.dnt.key_output.split()
                 for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                     for student_dir in dirs:
                         for student_file in os.listdir(os.path.join(root, student_dir)):
@@ -276,21 +277,21 @@ class App(QMainWindow):
                             if not re.match(".*\.py.*", student_file) is None:
                                 comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
                                 comments.run()
-                                print("ANALYZING", os.path.join(root, student_dir, student_file))
-                                print(student_dir)            #TODO: print out to log
+                                print("Analyzing:\n\t", os.path.join(root, student_dir, student_file))
                                 try:
-                                    #print(os.path.join(root, student_dir, student_file))
                                     self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                    self.resultArea.insertPlainText(student_dir + " ran successfully\n")
+                                    output_tokens = self.dnt.captured_output.split()
+                                    print("Output:\n", self.dnt.captured_output, sep="", file=self.resultArea)
+                                    points_awarded = 0
+                                    for i in range(len(output_tokens)):
+                                        if(output_tokens[i] == key_output_tokens[i]):
+                                            points_awarded = points_awarded + 1 
+                                    print("Grade:\n", points_awarded, "/", len(key_output_tokens), sep="", file=self.resultArea)
                                 except BaseException as e:
                                     print(e)
-                                    self.resultArea.insertPlainText(student_dir + " failed to run\n")
-                                    print("Could not analyze:", student_dir, file=self.resultArea)
+                                    print("Could not analyze:\n\t", student_dir, file=self.resultArea)
                             print(student_file)
-                print("DONE ANALYZING")                                                                  #TODO: print out to log
-                print(self.dnt.captured_output, file=self.resultArea) #NOTE: currently self.dnt.captured_output is a temporary file and is filled cumulatively
-        else:
-            pass
+                print("Done analyzing")                                                                  #TODO: print out to log
 
     @pyqtSlot()
     def zipdialog_on_click(self):
@@ -315,9 +316,7 @@ class App(QMainWindow):
     # Method to clear Temp Folder before exiting application
     @pyqtSlot()
     def closeEvent(self, event):
-        folder = '../target/temp'
         folder = os.path.join(TARGET_DIR_PATH, 'temp')
-
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
