@@ -354,12 +354,8 @@ class App(QMainWindow):
                             filename = os.path.join(root, student_dir, student_file)
                             if not re.match(".*\.py.*", student_file) is None:
                                 comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
-                            
-	
                             if(self.docstringButton.isChecked):
-                                print(comments.run())							
-														
-							
+                                print(comments.run())
                             print(filename)
                             comments.run()
                             print("ANALYZING", os.path.join(root, student_dir, student_file))
