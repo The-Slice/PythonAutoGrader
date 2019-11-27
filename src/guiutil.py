@@ -9,18 +9,14 @@ class StringEditor:
     def __init__(self, filePath=None):
         self.fname = None
         if filePath is None:
-            print("Ye!")
             self.fname = 'stredit.txt'
         else:
             self.fname = filePath
         
     def edit(self, string2edit):
-        print('editing')
         retval = None
         with open(self.fname, 'w') as edit:
             edit.write(string2edit)
-        print('written')
-        print(os.getenv('EDITOR'))
         os.system(self.fname)
         with open(self.fname, 'r') as edited:
             retval = edited.read()
@@ -105,7 +101,7 @@ class TestConfigOption:
 
         self.testCheck.move(xloc, yloc)
         self.dropdown.move(xloc + 140, yloc)
-        self.dropdown.setArrowType(Qt.LeftArrow)
+        self.dropdown.setArrowType(Qt.RightArrow)
         self.dropdown.show()
         self.testCheck.adjustSize()
         self.testCheck.show()
@@ -162,7 +158,7 @@ class TestConfigOption:
 
         else:
             self.collapsed = True
-            self.dropdown.setArrowType(Qt.LeftArrow)
+            self.dropdown.setArrowType(Qt.RightArrow)
             while len(self.tempbuttons):
                 temp = self.tempbuttons.pop()
                 button = temp[0]

@@ -16,6 +16,7 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
+from contextlib import redirect_stdout
 
 #DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
 DYNAMIC_ANALYSIS_TEMPLATE = '''
@@ -92,43 +93,42 @@ class Tester():
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
         self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 
                                                                          method_test_stubs=self.method_test_stubs,
+                                                                         output_path="$output_path",
                                                                          assignment_instance_name="$assignment_instance_name",
                                                                          assignment_instance="$assignment_instance")  # substitute key fields
         self.analyze_dynamically(self.grading_key)
         self.key_output = self.captured_output
         self.captured_output = ""
         #editor.edit("dynamic_analysis.py")
-    
-    def get_dynamic_template(self):
-        return DYNAMIC_ANALYSIS_TEMPLATE
-
-    def set_dynamic_template(self, template):
-        DYNAMIC_ANALYSIS_TEMPLATE = template
-
 
     def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""
-        output_buffer = io.StringIO("")                                            # a place to write a test's output to
+        output_buffer = io.StringIO()                                            # a place to write a test's output to
         #sys.stdout = output_buffer
-        copy2(target_script, self.tempdir)        
+        copy2(target_script, self.tempdir)                                       #copy the target script to the tempdir 
         target_script_name = os.path.basename(target_script).split('.py')[0]
         target_script_test_suite_path = os.path.join(self.tempdir, target_script_name + "_dynamic_analysis.py")
         target_script_test_suite_name = target_script_name  + "_dynamic_analysis"
         target_script_test_suite = open(target_script_test_suite_path, "w+")
-        target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(assignment_instance=os.path.abspath(target_script),
+        target_script_test_suite.write(Template(self.dynamic_analysis_template).substitute(output_path=os.path.abspath(os.path.join(self.tempdir, "output.txt")),
+                                                                                           assignment_instance=os.path.abspath(target_script),
                                                                                            assignment_instance_name=target_script_name))
         target_script_test_suite.close()
         print("BEFORE LOADING IMP")
+        sys.stdout = open(os.devnull, "w")
         module = imp.load_source(target_script_test_suite_name, os.path.abspath(target_script_test_suite_path))
+        sys.stdout = sys.__stdout__
         print("AFTER LOADING IMP")
         dynamic_analysis = getattr(module, "DynamicAnalysis")
         dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis)    # grab tests from the test module instance
         print("BEFORE MAKING TESTRUNNER")
         testrunner = unittest.TextTestRunner(stream = sys.stdout)
         print("BEFORE RUNNING TESTRUNNER")
-        testrunner.run(dynamic_test)                          # run tests and pipe to captured_output
+        with redirect_stdout(output_buffer):
+            testrunner.run(dynamic_test)                                                # run tests and pipe to captured_output
         sys.stdout = sys.__stdout__
-        print("CAPTURED_OUTPUT:\n", output_buffer.read(), "\nTUPTUO_DERUTPAC")
+        print("CAPTURED_OUTPUT:\n", output_buffer.getvalue())
+        self.captured_output = output_buffer.getvalue()
         try:
             os.remove(os.path.join(self.tempdir, os.path.basename(target_script_name)))
         except:
