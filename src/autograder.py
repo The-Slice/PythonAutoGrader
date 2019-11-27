@@ -76,20 +76,23 @@ class App(QMainWindow):
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
 		
-        self.docstringButton = QPushButton("Display Docstring", self)
+        self.docstringButton = QCheckBox("Display Docstring", self)
         self.docstringButton.setCheckable(True)
 		
-        self.docCountButton = QPushButton("Count Docstrings", self)
+        self.docCountButton = QCheckBox("Count Docstrings", self)
         self.docCountButton.setCheckable(True)
 		
-        self.commentButton = QPushButton("Count Comments", self)
+        self.commentButton = QCheckBox("Count Comments", self)
         self.commentButton.setCheckable(True)
 
-        self.dynamicButton = QPushButton("Dynamic Analysis", self)
+        self.dynamicButton = QCheckBox("Dynamic Analysis", self)
+        self.dynamicButton.clicked.connect(self.toggle_dynamic_on_click)
         self.dynamicButton.setCheckable(True)
 		
         self.editDynamicButton = QPushButton("Edit", self)
-        self.editDynamicButton.hide()
+        self.editDynamicButton.setEnabled(False)
+        self.editDynamicButton.repaint()
+        self.repaint()
 		
 		
 		
@@ -369,6 +372,8 @@ class App(QMainWindow):
                 print("DONE ANALYZING")                                                                  #TODO: print out to log
 
     @pyqtSlot()
+    
+    @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
 
@@ -379,6 +384,10 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
+
+    @pyqtSlot()
+    def toggle_dynamic_on_click(self):
+        self.editDynamicButton.setEnabled(self.dynamicButton.isChecked())
 
     @pyqtSlot()
     def editkey_on_click(self):
