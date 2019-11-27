@@ -17,7 +17,32 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import imp
 from string import Template
 
-DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+#DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+DYNAMIC_ANALYSIS_TEMPLATE = '''
+import runpy
+import unittest
+import subprocess
+import sys
+try:
+    from $assignment_instance_name import *
+except:
+    print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")
+    
+class DynamicAnalysis(unittest.TestCase):
+    
+    def setUp(self):
+        pass
+    
+    def test_main(self):
+        GLOBALS = {} # This is a dictionary for passing global variables to the program
+        try:
+            runpy.run_path(r"$assignment_instance", GLOBALS, "__main__")
+        except:
+            print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")
+$method_test_stubs
+    def tearDown(self):
+        pass
+'''
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
@@ -74,12 +99,11 @@ class Tester():
         self.captured_output = ""
         #editor.edit("dynamic_analysis.py")
     
-    def edit_template(self, keypath):
-        with open('./tmpkey.txt', 'w') as key:
-            key.write(DYNAMIC_ANALYSIS_TEMPLATE)
-        os.system('%s %s' % (os.getenv('EDITOR'), './tmpkey.txt'))
-        with open('./tmpkey.txt') as key:
-            DYNAMIC_ANALYSIS_TEMPLATE = key.read()
+    def get_dynamic_template(self):
+        return DYNAMIC_ANALYSIS_TEMPLATE
+
+    def set_dynamic_template(self, template):
+        DYNAMIC_ANALYSIS_TEMPLATE = template
 
 
     def analyze_dynamically(self, target_script):
