@@ -80,15 +80,18 @@ def generate_method_test_stubs(method_defs):
 class Tester():
     """ this class performs and logs static and/or dynamic analysis for a given assignment """
 
-    def __init__(self, grading_key, parent_dir):
+    def __init__(self, parent_dir):
         """ this __init__ realizes the dynamic_analysis_template using the given assignment's information, 
         then updates and reloads the dynamic_analysis module 
         """
         self.tempdir= os.path.join(parent_dir, "target", "temp")
         sys.path.insert(0,self.tempdir)
-        self.grading_key = grading_key                                                                  # keep the handle to the grading key
         self.captured_output = ""                                                                       # a place to write a test's output to
-        dynamic_analysis_template = Template(DYNAMIC_ANALYSIS_TEMPLATE)                                 # load generic unit test suite 
+        self.dynamic_analysis_template = DYNAMIC_ANALYSIS_TEMPLATE
+
+    def set_grading_key(self, grading_key):
+        self.grading_key = grading_key                                                                  # keep the handle to the grading key
+        dynamic_analysis_template = Template(self.dynamic_analysis_template)                                 # load generic unit test suite 
         self.method_defs = find_method_defs(self.grading_key)                                           # get all method defs from grading key
         self.method_test_stubs = generate_method_test_stubs(self.method_defs)                           # make a list of unit test stubs for each key method defs
         self.dynamic_analysis_template = dynamic_analysis_template.substitute(grading_key=self.grading_key.replace("\\", "\\\\"), 
@@ -99,12 +102,10 @@ class Tester():
         self.analyze_dynamically(self.grading_key)
         self.key_output = self.captured_output
         self.captured_output = ""
-        #editor.edit("dynamic_analysis.py")
 
     def analyze_dynamically(self, target_script):
         """ this method performs the dynamic analysis routines that have been loaded in the dynamic_analysis module"""
         output_buffer = io.StringIO()                                            # a place to write a test's output to
-        #sys.stdout = output_buffer
         copy2(target_script, self.tempdir)                                       #copy the target script to the tempdir 
         target_script_name = os.path.basename(target_script).split('.py')[0]
         target_script_test_suite_path = os.path.join(self.tempdir, target_script_name + "_dynamic_analysis.py")
@@ -114,20 +115,15 @@ class Tester():
                                                                                            assignment_instance=os.path.abspath(target_script),
                                                                                            assignment_instance_name=target_script_name))
         target_script_test_suite.close()
-        print("BEFORE LOADING IMP")
         sys.stdout = open(os.devnull, "w")
         module = imp.load_source(target_script_test_suite_name, os.path.abspath(target_script_test_suite_path))
         sys.stdout = sys.__stdout__
-        print("AFTER LOADING IMP")
         dynamic_analysis = getattr(module, "DynamicAnalysis")
         dynamic_test = unittest.TestLoader().loadTestsFromTestCase(dynamic_analysis)    # grab tests from the test module instance
-        print("BEFORE MAKING TESTRUNNER")
         testrunner = unittest.TextTestRunner(stream = sys.stdout)
-        print("BEFORE RUNNING TESTRUNNER")
         with redirect_stdout(output_buffer):
             testrunner.run(dynamic_test)                                                # run tests and pipe to captured_output
         sys.stdout = sys.__stdout__
-        print("CAPTURED_OUTPUT:\n", output_buffer.getvalue())
         self.captured_output = output_buffer.getvalue()
         try:
             os.remove(os.path.join(self.tempdir, os.path.basename(target_script_name)))
