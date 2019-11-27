@@ -357,7 +357,7 @@ class App(QMainWindow):
                                 if(self.docstringButton.isChecked):
                                     print(comments.run())
                                 comments.run()
-                                print("Analyzing:\n\t", os.path.join(root, student_dir, student_file))
+                                print("Analyzing:\n\t", os.path.join(root, student_dir, student_file), file=self.resultArea)
                                 try:
                                     self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
                                     output_tokens = self.dnt.captured_output.split()
