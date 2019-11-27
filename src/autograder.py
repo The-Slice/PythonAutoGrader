@@ -30,6 +30,7 @@ class QOutputLog(QPlainTextEdit):
 
 class App(QMainWindow):
     def __init__(self, parent=None):
+        self.dnt = None
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
         screenHeight = user32.GetSystemMetrics(1)
@@ -42,33 +43,63 @@ class App(QMainWindow):
 
         self.initUI()
 
-        self.testSuiteDict = {
-            'Comment Analysis': True,
-            'Dynamic Analysis': False
-        }
+        # self.testSuiteDict = {
+            # 'Comment Analysis': True,
+            # 'Dynamic Analysis': False
+        # }
 
-        self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
-        self.optionBoxes.add('Comment Analysis', 
-            { 
-                'Display Docstring': False,
-                'Count Comments': False
+        # self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
+        # self.optionBoxes.add('Comment Analysis', 
+            # { 
+                # 'Display Docstring': False,
+                # 'Count Comments': False
                 #'Display Comments': True 
-            }
-        )
-        self.optionBoxes.add('Dynamic Analysis',  
-            { # Format for adding buttons and other components to dropdown
-            #   'Button label' : [Constructor for component, component height, component width, listener]
-                'Edit Key': [QPushButton, 80, 20, self.editkey_on_click]
-            }
-        )
-        for opt in self.optionBoxes.children:
-            opt.dropdown.clicked.connect(opt.getExpandListener())
+            # }
+        # )
+        # self.optionBoxes.add('Dynamic Analysis',  
+            # { # Format for adding buttons and other components to dropdown
+              #'Button label' : [Constructor for component, component height, component width, listener]
+                # 'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
+            # }
+        # )
+        # for opt in self.optionBoxes.children:
+            # opt.dropdown.clicked.connect(opt.getExpandListener())
+			
+			
+        
+
+
+			
+		
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
+		
+        self.docstringButton = QCheckBox("Display Docstring", self)
+        self.docstringButton.setCheckable(True)
+		
+        self.docCountButton = QCheckBox("Count Docstrings", self)
+        self.docCountButton.setCheckable(True)
+		
+        self.commentButton = QCheckBox("Count Comments", self)
+        self.commentButton.setCheckable(True)
+
+        self.dynamicButton = QCheckBox("Dynamic Analysis", self)
+        self.dynamicButton.clicked.connect(self.toggle_dynamic_on_click)
+        self.dynamicButton.setCheckable(True)
+		
+        self.editDynamicButton = QPushButton("Edit", self)
+        self.editDynamicButton.setEnabled(False)
+        self.editDynamicButton.repaint()
+        self.editDynamicButton.clicked.connect(self.editkey_on_click)
+        self.repaint()
+		
+		
+		
+		
         
         self.resultArea = QOutputLog(self)
 
@@ -101,46 +132,94 @@ class App(QMainWindow):
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
+		
+        
+        
 
 
 
         # text result area
-        self.resultArea.resize(self.width*0.75, self.height*0.75)
+        #self.resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
-        self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         print("Log of program status displayed below:\n", file=self.resultArea)
-        self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
+        #self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
         self.resultArea.setReadOnly(True)
 
-        labelA = QLabel('Assignment Key:', self)
-        labelA.adjustSize()
-        labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
+        keyLabel = QLabel('Assignment Key:', self)
+        toggleLabel = QLabel('Toggle:', self)
+        lineLabel = QLabel('_________________', self)
+
+        # labelA.adjustSize()
+        # labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
 
         gradeButton = QPushButton("Grade", self)
-        gradeButton.resize(self.width*0.25-BORDERSIZE*3,gradeButton.height()*2)
-        gradeButton.move(BORDERSIZE, self.height - gradeButton.height() - BORDERSIZE)
         gradeButton.clicked.connect(self.grade_on_click)
         # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
 
 
         self.dragdrop = KeyDrop('Drop key here', self)
-        self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
-        self.dragdrop.resize((self.resultArea.width()-100)-labelA.width()-BORDERSIZE, 20)
 
-        addKeyButton = QPushButton("Add key", self)
-        addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
-        addKeyButton.clicked.connect(self.keydialog_on_click)
+        # addKeyButton = QPushButton("Add key", self)
+        # addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
+        # addKeyButton.clicked.connect(self.keydialog_on_click)
+        
+        mainWidget = QWidget()
+        keyWidget = QWidget()
+        textWidget = QWidget()
+		
+		#key layout
+        # keyGrid = QGridLayout()
+        # keyGrid.addWidget(labelFill,0,1)
+        # keyGrid.addWidget(labelA,0,2)
+        # keyGrid.addWidget(self.dragdrop,0,3)
+        # keyWidget.setLayout(keyGrid)
+		
+		#main layout
+        grid = QGridLayout()
+        #grid.addWidget(self.optionBoxes, 0,0)
+        grid.addWidget(keyLabel,0,1)
+        grid.addWidget(self.dragdrop,1,1)
+		
+        grid.addWidget(toggleLabel,0,0)
+        grid.addWidget(self.docstringButton,1,0)
+        grid.addWidget(self.docCountButton,2,0)
+        grid.addWidget(self.commentButton,3,0)
+        grid.addWidget(lineLabel,4,0)
+        grid.addWidget(self.dynamicButton,5,0)
+		
+        grid.addWidget(self.editDynamicButton, 6,0)		
+		
+        grid.addWidget(gradeButton, 21, 0)
+        grid.addWidget(self.resultArea, 2, 1, 20, 1)
+        mainWidget.setLayout(grid)
+		
+        # mainGrid = QGridLayout()
+        # mainGrid.addWidget(keyWidget, 0, 2)
+        # mainGrid.addWidget(textWidget, 3, 2, 5, 1)
+        # mainWidget.setLayout(mainGrid)
 
+        mainWidget.setGeometry(80, 100, 700, 550)
+        self.setCentralWidget(mainWidget)		
+		
+        if(self.dynamicButton.isChecked):
+            self.editDynamicButton.show()							
+													
+									
+		
+		
+		
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
     def setListener(self, button, function):
         button.clicked.connect(function)
 
+		
     #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
@@ -276,6 +355,8 @@ class App(QMainWindow):
                             filename = os.path.join(root, student_dir, student_file)
                             if not re.match(".*\.py.*", student_file) is None:
                                 comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                                if(self.docstringButton.isChecked):
+                                    print(comments.run())
                                 comments.run()
                                 print("Analyzing:\n\t", os.path.join(root, student_dir, student_file))
                                 try:
@@ -294,6 +375,8 @@ class App(QMainWindow):
                 print("Done analyzing")                                                                  #TODO: print out to log
 
     @pyqtSlot()
+    
+    @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
 
@@ -304,6 +387,10 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
+
+    @pyqtSlot()
+    def toggle_dynamic_on_click(self):
+        self.editDynamicButton.setEnabled(self.dynamicButton.isChecked())
 
     @pyqtSlot()
     def editkey_on_click(self):
