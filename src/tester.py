@@ -68,12 +68,12 @@ def generate_method_test_stubs(method_defs):
     """ this method generates unit test stubs for a list of method definitions """
     method_test_stubs = "\n"                                                  # make a string for method test stubs
     for method_def in method_defs:                                            # iterate through each method definition
-        method_test_stub = "\tdef test_" + method_def[0] + "(self):\n"      # begin method test stub with test method definition line
+        method_test_stub = "    def test_" + method_def[0] + "(self):\n"      # begin method test stub with test method definition line
         if len(method_def) > 1:                                               # if the method definition includes parameters
             method_params = method_def[1:]                                    # grab just the parameters from the method definition
             for method_param in method_params:                                # iterate through the method parameters
-                method_test_stub += "\t\t" + method_param + " = None\n"   # simply initialize a variable for each parameter to None
-        method_test_stub += "\t\tpass\n\n"                                # add a line to pass as default
+                method_test_stub += "        " + method_param + " = None\n"   # simply initialize a variable for each parameter to None
+        method_test_stub += "        pass\n\n"                                # add a line to pass as default
         method_test_stubs += method_test_stub                                 # append method test stub to the list 
     return method_test_stubs                                                  # return the method test stubs list
 
