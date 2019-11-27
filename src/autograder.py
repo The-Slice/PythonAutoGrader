@@ -263,7 +263,7 @@ class App(QMainWindow):
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
-        print(files)
+
         if (files and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -301,7 +301,8 @@ class App(QMainWindow):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
-    
+            self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+
         else:
             self.dragdrop.setText("Please select a key")
 
@@ -324,8 +325,9 @@ class App(QMainWindow):
         resultFileName = resultFileName[index:]  # Substring after last /
         localtime = time.asctime(time.localtime(time.time()))
         localtime = localtime.replace(":", "")
-        resultsPath = "../results/" + resultFileName + "" + localtime + ".txt"
-        f = open(resultsPath, "w")
+        resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName +""+ localtime + '.txt')
+        print(resultsPath)
+        f = open(resultsPath, "w+")
 
         # This is where we would start a stream or keep using f.write() to put results
         # These lines of code should be moved to the try with the prototype f.write()
@@ -333,32 +335,25 @@ class App(QMainWindow):
         # Failed compile Prototype : f.write(student_dir + " code does not compile... "+"Score:"0/#ofMethods)
         f.write("I'm putting stuff in the log")
         f.close()
-		
-        
-
 
         print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
-            for root, dirs, files in os.walk(STUDENTWORKSOURCE):
-                for student_dir in dirs:
-                    for student_file in os.listdir(os.path.join(root, student_dir)):
-                        filename = os.path.join(root, student_dir, student_file)
-                        if not re.match(".*\.py.*", student_file) is None:
-                            comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                #self.dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
+                print("Grading Key Output:\n", self.dnt.key_output, file=self.resultArea)
+                for root, dirs, files in os.walk(STUDENTWORKSOURCE):
+                    for student_dir in dirs:
+                        for student_file in os.listdir(os.path.join(root, student_dir)):
+                            filename = os.path.join(root, student_dir, student_file)
+                            if not re.match(".*\.py.*", student_file) is None:
+                                comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
                             
-							
-                            
-							
-							
+	
                             if(self.docstringButton.isChecked):
                                 print(comments.run())							
-							
-							
+														
 							
                             print(filename)
                             comments.run()
@@ -366,15 +361,12 @@ class App(QMainWindow):
                             print(student_dir)            #TODO: print out to log
                             try:
                                 #print(os.path.join(root, student_dir, student_file))
-                                dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            except BaseException as e:
-                                print(e)
-                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
-                                print("Could not analyze:", student_dir, file=self.resultArea)
-                        print(student_file)
-            print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                                    self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                except BaseException as e:
+                                    print(e)
+                                    print("Could not analyze:", student_dir, file=self.resultArea)
+                            print(student_file)
+                print("DONE ANALYZING")                                                                  #TODO: print out to log
 
     @pyqtSlot()
     def zipdialog_on_click(self):
@@ -388,10 +380,20 @@ class App(QMainWindow):
     def keydialog_on_click(self):
         self.openKeyDialog()
 
-    # BUG: Clicking the X button does not call this event, only the shortcut attached 'ctrl + q' triggers it
+    @pyqtSlot()
+    def editkey_on_click(self):
+        se = StringEditor()
+        if self.dnt is None:
+            QMessageBox.question(self, 'Test framework not initiated', "Please import a key first", QMessageBox.Ok)
+        else:
+            self.dnt.dynamic_analysis_template = se.edit(self.dnt.dynamic_analysis_template)
+
+    # Method to clear Temp Folder before exiting application
     @pyqtSlot()
     def closeEvent(self, event):
         folder = '../target/temp'
+        folder = os.path.join(TARGET_DIR_PATH, 'temp')
+
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
