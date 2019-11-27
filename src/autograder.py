@@ -364,10 +364,10 @@ class App(QMainWindow):
                             print(student_dir)            #TODO: print out to log
                             try:
                                 #print(os.path.join(root, student_dir, student_file))
-                                    self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                except BaseException as e:
-                                    print(e)
-                                    print("Could not analyze:", student_dir, file=self.resultArea)
+                                self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                            except BaseException as e:
+                                print(e)
+                                print("Could not analyze:", student_dir, file=self.resultArea)
                             print(student_file)
                 print("DONE ANALYZING")                                                                  #TODO: print out to log
 
