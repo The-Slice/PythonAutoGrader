@@ -55,13 +55,18 @@ class MyWindow(QMainWindow):
         self.resultArea = QPlainTextEdit(self)
         self.resultArea.setReadOnly(True)
         self.resultArea.setPlainText("Add a path with browse. . .")
-		
-		
+
+        self.desktopShortcut = QCheckBox("Create desktop shortcut", self)
+        self.desktopShortcut.setChecked(True)
+        self.startbar = QCheckBox("Create start menu shortcut", self)
+        self.startbar.setChecked(True)
 					
         layout = QVBoxLayout()
         layout.addWidget(self.buildButton)
         layout.addWidget(self.resultArea)		
         layout.addWidget(self.browseButton)
+        layout.addWidget(self.desktopShortcut)
+        layout.addWidget(self.startbar)
 		
         		
 	    
@@ -96,23 +101,38 @@ class MyWindow(QMainWindow):
         self.appendPlainText("done", end='')
         self.appendPlainText("Compiling script ... ")
         if(self.path != 'path'):
-            PyInstaller.__main__.run([
-			    '-F',
+            args = [
+                '-F',
                 'autograder.py',
-			    'commentSummary.py',
-			    'guiutil.py',
-			    'tester.py',
-                #'--windowed',
+                'commentSummary.py',
+                'guiutil.py',
+                'tester.py',
                 '--onefile',
-			    '--distpath', '%s/bin' % self.path,
-			    '--workpath', '%s' % self.path + '/workpath',
-         	    '--specpath', '%s' % self.path,
-            ])
+                '--distpath', '%s/bin' % self.path,
+                '--workpath', '%s' % self.path + '/workpath',
+                '--specpath', '%s' % self.path,
+                '--windowed'
+            ]
+            try:
+                if sys.argv[1] == '--debug':
+                    args.pop()
+            except IndexError:
+                pass
+            try:
+                PyInstaller.__main__.run(args)
+            except:
+                QMessageBox.question(self, 'Install unsuccessful', "Try picking a new install location", QMessageBox.Ok)
+                app.exit()
         self.appendPlainText("done", end='')
-        os.mkdir(os.path.join(self.path, "target"))
-        os.mkdir(os.path.join(self.path, "target", "key"))
-        os.mkdir(os.path.join(self.path, "target", 'temp'))
-        os.mkdir(os.path.join(self.path, "img"))
+        try:
+            os.mkdir(os.path.join(self.path, "target"))
+            os.mkdir(os.path.join(self.path, "target", "key"))
+            os.mkdir(os.path.join(self.path, "target", 'temp'))
+            os.mkdir(os.path.join(self.path, "img"))
+            os.mkdir(os.path.join(self.path, "results"))
+
+        except:
+            pass
         for filename in os.listdir(os.path.join(REPOROOT, 'img')):
             shutil.copy(
                 os.path.join(REPOROOT, "img", filename),
@@ -125,17 +145,10 @@ class MyWindow(QMainWindow):
             description="Python AutoGrader",
             terminal=False,
             icon=os.path.join(self.path, 'img', 'pythonBlugold.ico'),
-            desktop=True,
-            startmenu=False
+            desktop=self.desktopShortcut.isChecked(),
+            startmenu=self.startbar.isChecked()
         )
-        #winshell.CreateShortcut(
-        #    Path=os.path.join(desktop, "AutoGrader.lnk"),
-        #    Target=os.path.join(self.path, 'bin', 'autograder.exe'),
-        #    Icon=(os.path.join(self.path, 'img', 'pythonBlugold.ico'), 0),
-        #    Description="Python AutoGrader",
-        #    StartIn=os.path.join(self.path, 'bin')
-        #)
-
+        resp = QMessageBox.question(self, 'Install successful', "You may new exit the program", QMessageBox.Ok)
         app.quit()
 		
 		

@@ -18,7 +18,32 @@ import imp
 from string import Template
 from contextlib import redirect_stdout
 
-DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport contextlib\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\n#contextlib.redirect_stdout(open(r"$output_path", "w+"))\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+#DYNAMIC_ANALYSIS_TEMPLATE = 'import runpy\nimport unittest\nimport subprocess\nimport sys\ntry:\n\tfrom $assignment_instance_name import *\nexcept:\n\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")\n\nclass DynamicAnalysis(unittest.TestCase):\n\n\tdef setUp(self):\n\t\tpass\n\n\tdef test_main(self):\n\t\ttry:\n\t\t\trunpy.run_path(r"$assignment_instance", {}, "__main__")#subprocess.run([sys.executable, r"$assignment_instance"])\n\t\texcept:\n\t\t\tprint("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")\n\n$method_test_stubs\n\n\tdef tearDown(self):\n\t\tpass'
+DYNAMIC_ANALYSIS_TEMPLATE = '''
+import runpy
+import unittest
+import subprocess
+import sys
+try:
+    from $assignment_instance_name import *
+except:
+    print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")
+    
+class DynamicAnalysis(unittest.TestCase):
+    
+    def setUp(self):
+        pass
+    
+    def test_main(self):
+        GLOBALS = {} # This is a dictionary for passing global variables to the program
+        try:
+            runpy.run_path(r"$assignment_instance", GLOBALS, "__main__")
+        except:
+            print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")
+$method_test_stubs
+    def tearDown(self):
+        pass
+'''
 
 def find_method_defs(fname):
     """ this method finds all method definitions within a file """
