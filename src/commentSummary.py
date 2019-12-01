@@ -5,12 +5,14 @@ class CommentSummary:
         self.opts = opts
 
     def run(self):
-        if self.opts['Display Docstring']:
-            self.comment_summary_docstrings(self.fileName)
+        if self.opts[0] == 'Count Docstring':
+            return self.count_docstrings(self.fileName)
+        if self.opts[0] == 'Display Docstring':
+            return self.comment_summary_docstrings(self.fileName)
         comments = self.inlineCommentCounter(self.fileName)
-        if self.opts['Count Comments']:
-            print("Number of comments: {}".format(str(len(comments))))
-            print("Comments: ")
+        if self.opts[0] == 'Count Comments':
+            return "Number of comments: {}".format(str(len(comments)))
+            
         #if self.opts['Display Comments'] is not None and self.opts['Display Comments']:
         #    for comment in comments:
         #        print("\t {}".format(comment))
@@ -23,7 +25,7 @@ class CommentSummary:
 
         '''
         docStrings = self.comment_summary_get_docstrings(path)
-        self.display_docstrings(docStrings)
+        return self.display_docstrings(docStrings)
 
 
     def comment_summary_get_docstrings(self, path):
@@ -70,7 +72,10 @@ class CommentSummary:
             docStrings.append(text[start:end])
 
         return docStrings
-
+    
+    def count_docstrings(self, path):
+        docStrings = self.comment_summary_get_docstrings(path)
+        return "Number of docstrings: " + str(len(docStrings)) 
 
     def display_docstrings(self, docStrings):
         ''' This method prints a list of docString style comments
@@ -78,10 +83,15 @@ class CommentSummary:
         Parameters:
             docStrings (list) : A list of all docString style comments
         '''
-        print("A total of *" + str(len(docStrings)) + "* docString style comments were found")
+        string = "";
 
         for i in range(len(docStrings)):
-            print("    -> " + docStrings[i])
+            string = string + ("\n    -> " + docStrings[i])
+            
+        if(string == ""):
+            string = " -> No Docstring detected"
+            
+        return string + "\n"
 
     def inlineCommentCounter(self, fileName):
         comments = []
