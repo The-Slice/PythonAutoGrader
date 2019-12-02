@@ -18,7 +18,6 @@ subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "
 import pip
 import winshell
 import pyshortcuts
-from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -62,9 +61,9 @@ class MyWindow(QMainWindow):
         self.startbar.setChecked(True)
 					
         layout = QVBoxLayout()
-        layout.addWidget(self.buildButton)
-        layout.addWidget(self.resultArea)		
         layout.addWidget(self.browseButton)
+        layout.addWidget(self.resultArea)	
+        layout.addWidget(self.buildButton)	
         layout.addWidget(self.desktopShortcut)
         layout.addWidget(self.startbar)
 		
