@@ -342,8 +342,6 @@ class App(QMainWindow):
         # These lines of code should be moved to the try with the prototype f.write()
         # Successful compile Prototype : f.write(student_dir + "Method 1 Result:"Pass + "Method 2 Result:"Fail + "Metod X Result:" + "Score:" #ofPasses/#ofMethods)
         # Failed compile Prototype : f.write(student_dir + " code does not compile... "+"Score:"0/#ofMethods)
-        f.write("I'm putting stuff in the log")
-        f.close()
 
         #grade assignments based on comment count docstring availability  
         #perform dynamic analysis if button is toggled
@@ -352,10 +350,11 @@ class App(QMainWindow):
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("-> Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
+            print("-> Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=f)
+            print("-> For Student Dirs in Folder: ", STUDENTWORKSOURCE, file=f)
             print("-> Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
             print("-> End Key Output:\n", file=self.resultArea)
             key_output_tokens = self.dnt.key_output.split()
-            
             print("\n=========================== Grading Directory:", STUDENTWORKSOURCE + " ===========================", file=self.resultArea)
             print("-> Beginning Analysis", file=self.resultArea)    
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
@@ -365,29 +364,26 @@ class App(QMainWindow):
                         print("\n\n============================================ student: " + student_dir + " ================================================", file=self.resultArea)
                         for student_file in os.listdir(os.path.join(root, student_dir)):
                             filename = os.path.join(root, student_dir, student_file)
-                            
                             #only grade .py files
                             if not re.match(".*\.py.*", student_file) is None:
-                                
-                                
-                                
+                                student_result_string = str(student_file) + " : "
                                 print("\n\n---------------------------------- file: " + student_file + " --------------------------------", file=self.resultArea)
-                        
                                 #comment count toggled
                                 if(self.commentButton.isChecked()):
                                     comment = CommentSummary(filename, ['Count Comments'])
-                                    print(" -> " + comment.run(), file=self.resultArea)
-                                
+                                    num_comments = comment.run()
+                                    print(" -> " + num_comments, file=self.resultArea)
+                                    student_result_string += str(num_comments) + " comments : "
                                 #docstring count toggled
                                 if(self.docCountButton.isChecked()):
                                     comment = CommentSummary(filename, ['Count Docstring'])
-                                    print(" -> " + comment.run(), file=self.resultArea)
-                                
+                                    num_docs= comment.run()
+                                    print(" -> " + num_docs, file=self.resultArea)
+                                    student_result_string += str(num_docs) + " docstrings : "
                                 #display docstring toggled
                                 if(self.docstringButton.isChecked()):
                                     comment = CommentSummary(filename, ['Display Docstring'])
                                     print(comment.run(), file=self.resultArea)
-              
                                 #run dynamic analysis if button is toggled
                                 if(self.dynamicButton.isChecked()):
                                     try:
@@ -396,15 +392,20 @@ class App(QMainWindow):
                                         print("-> Dynamic Analysis:", file=self.resultArea)
                                         print("    -> Output:\n", self.dnt.captured_output, sep="", file=self.resultArea)
                                         points_awarded = 0
+                                        if len(output_tokens) > len(key_output_tokens):
+                                            output_tokens = output_tokens[0:len(key_output_tokens) - 1]
                                         for i in range(len(output_tokens)):
                                             if(output_tokens[i] == key_output_tokens[i]):
                                                 points_awarded = points_awarded + 1 
                                         print("    -> Grade: ", points_awarded, "/", len(key_output_tokens), sep="", file=self.resultArea)
+                                        student_result_string += str(points_awarded) + "/" + str(len(key_output_tokens)) + " points"
+                                        print("-> ", student_result_string, file=f)
                                     except BaseException as e:
                                         print(e)
                                         print("    -> Could not analyze:\n\t", student_dir, file=self.resultArea)
             print("=================================================================================================================================================" , file=self.resultArea)      
             print("-> Analysis Complete", file=self.resultArea)                                                                 
+        f.close()
 
     @pyqtSlot()
     
