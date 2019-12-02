@@ -321,7 +321,7 @@ class App(QMainWindow):
     @pyqtSlot()
     def grade_on_click(self):
         if self.dnt is None and self.dynamicButton.isChecked():
-            QMessageBox.question(self, 'Test framework not initiated', "Please import a key first", QMessageBox.Ok)
+            QMessageBox.question(self, 'No key imported', "Please import a key first", QMessageBox.Ok)
             return
         #clear log before grading
         self.resultArea.clear()
@@ -369,20 +369,20 @@ class App(QMainWindow):
                             filename = os.path.join(root, student_dir, student_file)
                             #only grade .py files
                             if not re.match(".*\.py.*", student_file) is None:
-                                student_result_string = str(student_file) + " : "
+                                student_result_string = str(student_dir) + "\n    "
                                 print("\n\n---------------------------------- file: " + student_file + " --------------------------------", file=self.resultArea)
                                 #comment count toggled
                                 if(self.commentButton.isChecked()):
                                     comment = CommentSummary(filename, ['Count Comments'])
                                     num_comments = comment.run()
                                     print(" -> " + num_comments, file=self.resultArea)
-                                    student_result_string += str(num_comments) + " comments : "
+                                    student_result_string += str(num_comments) + ", " 
                                 #docstring count toggled
                                 if(self.docCountButton.isChecked()):
                                     comment = CommentSummary(filename, ['Count Docstring'])
                                     num_docs= comment.run()
                                     print(" -> " + num_docs, file=self.resultArea)
-                                    student_result_string += str(num_docs) + " docstrings : "
+                                    student_result_string += str(num_docs) + ", "
                                 #display docstring toggled
                                 if(self.docstringButton.isChecked()):
                                     comment = CommentSummary(filename, ['Display Docstring'])
@@ -401,7 +401,7 @@ class App(QMainWindow):
                                             if(output_tokens[i] == key_output_tokens[i]):
                                                 points_awarded = points_awarded + 1 
                                         print("    -> Grade: ", points_awarded, "/", len(key_output_tokens), sep="", file=self.resultArea)
-                                        student_result_string += str(points_awarded) + "/" + str(len(key_output_tokens)) + " points"
+                                        student_result_string += "points: " + str(points_awarded) + "/" + str(len(key_output_tokens)) 
                                         print("-> ", student_result_string, file=f)
                                     except BaseException as e:
                                         print(e)
