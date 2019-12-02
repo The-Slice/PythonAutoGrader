@@ -4,13 +4,15 @@ import re
 import shutil
 import sys
 import multiprocessing
+import time
+import glob
 from zipfile import ZipFile
 from shutil import copy2
-from guiutil import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from tester import *
+from strtools import *
 from commentSummary import CommentSummary 
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
@@ -26,8 +28,8 @@ class QOutputLog(QPlainTextEdit):
         self.insertPlainText(string)
 
 class App(QMainWindow):
-    
     def __init__(self, parent=None):
+        self.dnt = None
         user32 = ctypes.windll.user32
         screenWidth = user32.GetSystemMetrics(0)
         screenHeight = user32.GetSystemMetrics(1)
@@ -40,40 +42,71 @@ class App(QMainWindow):
 
         self.initUI()
 
-        self.testSuiteDict = {
-            'Comment Analysis': True,
-            'Dynamic Analysis': False
-        }
+        # self.testSuiteDict = {
+            # 'Comment Analysis': True,
+            # 'Dynamic Analysis': False
+        # }
 
-        self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
-        self.optionBoxes.add('Comment Analysis', 
-            { 
-                'Display Docstring': False,
-                'Count Comments': False
+        # self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
+        # self.optionBoxes.add('Comment Analysis', 
+            # { 
+                # 'Display Docstring': False,
+                # 'Count Comments': False
                 #'Display Comments': True 
-            }
-        )
-        self.optionBoxes.add('Dynamic Analysis',  
-            { # Format for adding buttons and other components to dropdown
-            #   'Button label' : [Constructor for component, component height, component width, listener]
-                'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
-            }
-        )
-        for opt in self.optionBoxes.children:
-            opt.dropdown.clicked.connect(opt.getExpandListener())
+            # }
+        # )
+        # self.optionBoxes.add('Dynamic Analysis',  
+            # { # Format for adding buttons and other components to dropdown
+              #'Button label' : [Constructor for component, component height, component width, listener]
+                # 'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
+            # }
+        # )
+        # for opt in self.optionBoxes.children:
+            # opt.dropdown.clicked.connect(opt.getExpandListener())
+			
+			
+        
+
+
+			
+		
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
+		
+        self.docstringButton = QCheckBox("Display Docstring", self)
+        self.docstringButton.setCheckable(True)
+		
+        self.docCountButton = QCheckBox("Count Docstrings", self)
+        self.docCountButton.setCheckable(True)
+		
+        self.commentButton = QCheckBox("Count Comments", self)
+        self.commentButton.setCheckable(True)
+
+        self.dynamicButton = QCheckBox("Dynamic Analysis", self)
+        self.dynamicButton.clicked.connect(self.toggle_dynamic_on_click)
+        self.dynamicButton.setCheckable(True)
+		
+        self.editDynamicButton = QPushButton("Edit", self)
+        self.editDynamicButton.setEnabled(False)
+        self.editDynamicButton.repaint()
+        self.editDynamicButton.clicked.connect(self.editkey_on_click)
+        self.repaint()
+		
+		
+		
+		
         
         self.resultArea = QOutputLog(self)
 
-        exitAct = QAction(QIcon('exit.png'), '&Exit', self)        
+        #  exitAct = QAction(QIcon('exit.png'), '&Exit', self)
+        exitAct = QAction("Quit",self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
-        exitAct.triggered.connect(qApp.quit)
+        exitAct.triggered.connect(self.close)
 
         openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
@@ -98,46 +131,94 @@ class App(QMainWindow):
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
+		
+        
+        
 
 
 
         # text result area
-        self.resultArea.resize(self.width*0.75, self.height*0.75)
+        #self.resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
-        self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         print("Log of program status displayed below:\n", file=self.resultArea)
-        self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
+        #self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
         self.resultArea.setReadOnly(True)
 
-        labelA = QLabel('Assignment Key:', self)
-        labelA.adjustSize()
-        labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
+        keyLabel = QLabel('Assignment Key:', self)
+        toggleLabel = QLabel('Toggle:', self)
+        lineLabel = QLabel('_________________', self)
+
+        # labelA.adjustSize()
+        # labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
 
         gradeButton = QPushButton("Grade", self)
-        gradeButton.resize(self.width*0.25-BORDERSIZE*3,gradeButton.height()*2)
-        gradeButton.move(BORDERSIZE, self.height - gradeButton.height() - BORDERSIZE)
         gradeButton.clicked.connect(self.grade_on_click)
         # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
 
 
         self.dragdrop = KeyDrop('Drop key here', self)
-        self.dragdrop.move(self.width/4-BORDERSIZE+labelA.width()+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE)
-        self.dragdrop.resize((self.resultArea.width()-100)-labelA.width()-BORDERSIZE, 20)
 
-        addKeyButton = QPushButton("Add key", self)
-        addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
-        addKeyButton.clicked.connect(self.keydialog_on_click)
+        # addKeyButton = QPushButton("Add key", self)
+        # addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
+        # addKeyButton.clicked.connect(self.keydialog_on_click)
+        
+        mainWidget = QWidget()
+        keyWidget = QWidget()
+        textWidget = QWidget()
+		
+		#key layout
+        # keyGrid = QGridLayout()
+        # keyGrid.addWidget(labelFill,0,1)
+        # keyGrid.addWidget(labelA,0,2)
+        # keyGrid.addWidget(self.dragdrop,0,3)
+        # keyWidget.setLayout(keyGrid)
+		
+		#main layout
+        grid = QGridLayout()
+        #grid.addWidget(self.optionBoxes, 0,0)
+        grid.addWidget(keyLabel,0,1)
+        grid.addWidget(self.dragdrop,1,1)
+		
+        grid.addWidget(toggleLabel,0,0)
+        grid.addWidget(self.docstringButton,1,0)
+        grid.addWidget(self.docCountButton,2,0)
+        grid.addWidget(self.commentButton,3,0)
+        grid.addWidget(lineLabel,4,0)
+        grid.addWidget(self.dynamicButton,5,0)
+		
+        grid.addWidget(self.editDynamicButton, 6,0)		
+		
+        grid.addWidget(gradeButton, 21, 0)
+        grid.addWidget(self.resultArea, 2, 1, 20, 1)
+        mainWidget.setLayout(grid)
+		
+        # mainGrid = QGridLayout()
+        # mainGrid.addWidget(keyWidget, 0, 2)
+        # mainGrid.addWidget(textWidget, 3, 2, 5, 1)
+        # mainWidget.setLayout(mainGrid)
 
+        mainWidget.setGeometry(80, 100, 700, 550)
+        self.setCentralWidget(mainWidget)		
+		
+        if(self.dynamicButton.isChecked):
+            self.editDynamicButton.show()							
+													
+									
+		
+		
+		
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
     def setListener(self, button, function):
         button.clicked.connect(function)
 
+		
     #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
@@ -187,7 +268,7 @@ class App(QMainWindow):
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
 		#PermissionError exception fixes this issue
-        print(files)
+
         if (files and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -225,7 +306,9 @@ class App(QMainWindow):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
             CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, os.path.basename(ifileName[0]))
-    
+            self.dnt = Tester(AUTOGRADER_PATH)
+            self.dnt.set_grading_key(CURRENT_GRADING_KEY_PATH)
+
         else:
             self.dragdrop.setText("Please select a key")
 
@@ -241,35 +324,57 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
+
+        # this code produces an output txt file that is named the dir chosen and also time stamped
+        resultFileName = ifileName
+        index = resultFileName.rfind('/') + 1  # Finds last instance of /
+        resultFileName = resultFileName[index:]  # Substring after last /
+        localtime = time.asctime(time.localtime(time.time()))
+        localtime = localtime.replace(":", "")
+        resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName +""+ localtime + '.txt')
+        f = open(resultsPath, "w+")
+
+        # This is where we would start a stream or keep using f.write() to put results
+        # These lines of code should be moved to the try with the prototype f.write()
+        # Successful compile Prototype : f.write(student_dir + "Method 1 Result:"Pass + "Method 2 Result:"Fail + "Metod X Result:" + "Score:" #ofPasses/#ofMethods)
+        # Failed compile Prototype : f.write(student_dir + " code does not compile... "+"Score:"0/#ofMethods)
+        f.write("I'm putting stuff in the log")
+        f.close()
+
         print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
         print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            dnt = Tester(CURRENT_GRADING_KEY_PATH, AUTOGRADER_PATH)
-            print("Grading Key Output:\n", dnt.key_output, file=self.resultArea)
-            for root, dirs, files in os.walk(STUDENTWORKSOURCE):
-                for student_dir in dirs:
-                    for student_file in os.listdir(os.path.join(root, student_dir)):
-                        filename = os.path.join(root, student_dir, student_file)
-                        if not re.match(".*\.py.*", student_file) is None:
-                            comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
-                            print(filename)
-                            comments.run()
-                            print("ANALYZING", os.path.join(root, student_dir, student_file))
-                            print(student_dir)            #TODO: print out to log
-                            try:
-                                #print(os.path.join(root, student_dir, student_file))
-                                dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                self.resultArea.insertPlainText(student_dir + " ran successfully\n")
-                            except BaseException as e:
-                                print(e)
-                                self.resultArea.insertPlainText(student_dir + " failed to run\n")
-                                print("Could not analyze:", student_dir, file=self.resultArea)
-                        print(student_file)
-            print("DONE ANALYZING")                                                                  #TODO: print out to log
-            print(dnt.captured_output, file=self.resultArea) #NOTE: currently dnt.captured_output is a temporary file and is filled cumulatively
+                print("Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
+                key_output_tokens = self.dnt.key_output.split()
+                for root, dirs, files in os.walk(STUDENTWORKSOURCE):
+                    for student_dir in dirs:
+                        for student_file in os.listdir(os.path.join(root, student_dir)):
+                            filename = os.path.join(root, student_dir, student_file)
+                            if not re.match(".*\.py.*", student_file) is None:
+                                comments = CommentSummary(filename, self.optionBoxes.getTestOptions('Comment Analysis'))
+                                if(self.docstringButton.isChecked):
+                                    print(comments.run())
+                                comments.run()
+                                print("Analyzing:\n\t", os.path.join(root, student_dir, student_file))
+                                try:
+                                    self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                    output_tokens = self.dnt.captured_output.split()
+                                    print("Output:\n", self.dnt.captured_output, sep="", file=self.resultArea)
+                                    points_awarded = 0
+                                    for i in range(len(output_tokens)):
+                                        if(output_tokens[i] == key_output_tokens[i]):
+                                            points_awarded = points_awarded + 1 
+                                    print("Grade:\n", points_awarded, "/", len(key_output_tokens), sep="", file=self.resultArea)
+                                except BaseException as e:
+                                    print(e)
+                                    print("Could not analyze:\n\t", student_dir, file=self.resultArea)
+                            print(student_file)
+                print("Done analyzing")                                                                  #TODO: print out to log
 
+    @pyqtSlot()
+    
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
@@ -281,6 +386,35 @@ class App(QMainWindow):
     @pyqtSlot()
     def keydialog_on_click(self):
         self.openKeyDialog()
+
+    @pyqtSlot()
+    def toggle_dynamic_on_click(self):
+        self.editDynamicButton.setEnabled(self.dynamicButton.isChecked())
+
+    @pyqtSlot()
+    def editkey_on_click(self):
+        se = StringEditor()
+        if self.dnt is None:
+            QMessageBox.question(self, 'Test framework not initiated', "Please import a key first", QMessageBox.Ok)
+        else:
+            self.dnt.dynamic_analysis_template = se.edit(self.dnt.dynamic_analysis_template)
+
+    # Method to clear Temp Folder before exiting application
+    @pyqtSlot()
+    def closeEvent(self, event):
+        folder = os.path.join(TARGET_DIR_PATH, 'temp')
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            try:
+                if re.match(".*\.gitkeep.*",filename):
+                    pass
+                elif os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e))
+        qApp.quit()
 
 class KeyDrop(QLabel):
 
@@ -308,7 +442,6 @@ class KeyDrop(QLabel):
                 shutil.rmtree(dirname)
                 os.mkdir(dirname)
                 copy2(path, dirname)
-   
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
