@@ -320,6 +320,9 @@ class App(QMainWindow):
 
     @pyqtSlot()
     def grade_on_click(self):
+        if self.dnt is None and self.dynamicButton.isChecked():
+            QMessageBox.question(self, 'Test framework not initiated', "Please import a key first", QMessageBox.Ok)
+            return
         #clear log before grading
         self.resultArea.clear()
         
