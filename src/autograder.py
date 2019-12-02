@@ -13,8 +13,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from tester import *
 from strtools import *
-from commentSummary import CommentSummary
-
+from commentSummary import CommentSummary 
 BORDERSIZE = 10
 DROPDOWN_LOC = 30
 AUTOGRADER_PATH = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -24,11 +23,9 @@ KEY_DIR_PATH = os.path.join(TARGET_DIR_PATH, "key")
 CURRENT_GRADING_KEY_PATH = None
 STUDENTWORKSOURCE = None
 
-
 class QOutputLog(QPlainTextEdit):
     def write(self, string):
         self.insertPlainText(string)
-
 
 class App(QMainWindow):
     def __init__(self, parent=None):
@@ -46,90 +43,108 @@ class App(QMainWindow):
         self.initUI()
 
         # self.testSuiteDict = {
-        # 'Comment Analysis': True,
-        # 'Dynamic Analysis': False
+            # 'Comment Analysis': True,
+            # 'Dynamic Analysis': False
         # }
 
         # self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
         # self.optionBoxes.add('Comment Analysis', 
-        # {
-        # 'Display Docstring': False,
-        # 'Count Comments': False
-        # 'Display Comments': True
-        # }
+            # { 
+                # 'Display Docstring': False,
+                # 'Count Comments': False
+                #'Display Comments': True 
+            # }
         # )
         # self.optionBoxes.add('Dynamic Analysis',  
-        # { # Format for adding buttons and other components to dropdown
-        # 'Button label' : [Constructor for component, component height, component width, listener]
-        # 'Edit Key': [QPushButton, 80, 20, self.openDirectory]
-        # }
+            # { # Format for adding buttons and other components to dropdown
+              #'Button label' : [Constructor for component, component height, component width, listener]
+                # 'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
+            # }
         # )
         # for opt in self.optionBoxes.children:
-        # opt.dropdown.clicked.connect(opt.getExpandListener())
+            # opt.dropdown.clicked.connect(opt.getExpandListener())
+			
+			
+        
+
+
+			
+		
 
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         self.setWindowIcon(QIcon(os.path.join(AUTOGRADER_PATH, 'img', 'pythonBlugold.ico')))
-
+		
         self.docstringButton = QCheckBox("Display Docstring", self)
         self.docstringButton.setCheckable(True)
-
+		
         self.docCountButton = QCheckBox("Count Docstrings", self)
         self.docCountButton.setCheckable(True)
-
+		
         self.commentButton = QCheckBox("Count Comments", self)
         self.commentButton.setCheckable(True)
 
         self.dynamicButton = QCheckBox("Dynamic Analysis", self)
         self.dynamicButton.clicked.connect(self.toggle_dynamic_on_click)
         self.dynamicButton.setCheckable(True)
-
+		
         self.editDynamicButton = QPushButton("Edit", self)
         self.editDynamicButton.setEnabled(False)
         self.editDynamicButton.repaint()
         self.editDynamicButton.clicked.connect(self.editkey_on_click)
         self.repaint()
-
+		
+		
+		
+		
+        
         self.resultArea = QOutputLog(self)
 
         #  exitAct = QAction(QIcon('exit.png'), '&Exit', self)
-        exitAct = QAction("Quit", self)
+        exitAct = QAction("Quit",self)
         exitAct.setShortcut('Ctrl+Q')
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(self.close)
 
-        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)
+        openFile = QAction(QIcon('exit.png'), '&Import Zip(s)', self)        
         openFile.setShortcut('Ctrl+O')
         openFile.setStatusTip('Open Zip(s)')
         openFile.triggered.connect(self.zipdialog_on_click)
 
-        openDir = QAction(QIcon('exit.png'), '&Import Directory', self)
+        openDir = QAction(QIcon('exit.png'), '&Import Directory', self)        
         openDir.setShortcut('Ctrl+D')
         openDir.setStatusTip('Open Directory')
         openDir.triggered.connect(self.zipdirectory_on_click)
 
-        openKey = QAction(QIcon('exit.png'), '&Open Key', self)
+        openKey = QAction(QIcon('exit.png'), '&Open Key', self)        
         openKey.setShortcut('Ctrl+F')
         openKey.setStatusTip('Open Key')
         openKey.triggered.connect(self.keydialog_on_click)
 
+
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
+        fileMenu = menubar.addMenu('&Tools')
         fileMenu.addAction(openDir)
         fileMenu.addAction(openFile)
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
+		
+        
+        
+
+
+
         # text result area
-        # self.resultArea.resize(self.width*0.75, self.height*0.75)
+        #self.resultArea.resize(self.width*0.75, self.height*0.75)
 
         # attempt to use pyqt auto element resizing
-        # self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         print("Log of program status displayed below:\n", file=self.resultArea)
-        # self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
+        #self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
         self.resultArea.setReadOnly(True)
 
@@ -145,70 +160,76 @@ class App(QMainWindow):
         # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
 
-        self.dragdrop = KeyDrop('Drop key here', self)
+
+        self.dragdrop = KeyDrop('Drop key here or open with tools', self)
 
         # addKeyButton = QPushButton("Add key", self)
         # addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
         # addKeyButton.clicked.connect(self.keydialog_on_click)
-
+        
         mainWidget = QWidget()
         keyWidget = QWidget()
         textWidget = QWidget()
-
-        # key layout
+		
+		#key layout
         # keyGrid = QGridLayout()
         # keyGrid.addWidget(labelFill,0,1)
         # keyGrid.addWidget(labelA,0,2)
         # keyGrid.addWidget(self.dragdrop,0,3)
         # keyWidget.setLayout(keyGrid)
-
-        # main layout
+		
+		#main layout
         grid = QGridLayout()
-        # grid.addWidget(self.optionBoxes, 0,0)
-        grid.addWidget(keyLabel, 0, 1)
-        grid.addWidget(self.dragdrop, 1, 1)
-
-        grid.addWidget(toggleLabel, 0, 0)
-        grid.addWidget(self.docstringButton, 1, 0)
-        grid.addWidget(self.docCountButton, 2, 0)
-        grid.addWidget(self.commentButton, 3, 0)
-        grid.addWidget(lineLabel, 4, 0)
-        grid.addWidget(self.dynamicButton, 5, 0)
-
-        grid.addWidget(self.editDynamicButton, 6, 0)
-
+        #grid.addWidget(self.optionBoxes, 0,0)
+        grid.addWidget(keyLabel,0,1)
+        grid.addWidget(self.dragdrop,1,1)
+		
+        grid.addWidget(toggleLabel,0,0)
+        grid.addWidget(self.docstringButton,1,0)
+        grid.addWidget(self.docCountButton,2,0)
+        grid.addWidget(self.commentButton,3,0)
+        grid.addWidget(lineLabel,4,0)
+        grid.addWidget(self.dynamicButton,5,0)
+		
+        grid.addWidget(self.editDynamicButton, 6,0)		
+		
         grid.addWidget(gradeButton, 21, 0)
         grid.addWidget(self.resultArea, 2, 1, 20, 1)
         mainWidget.setLayout(grid)
-
+		
         # mainGrid = QGridLayout()
         # mainGrid.addWidget(keyWidget, 0, 2)
         # mainGrid.addWidget(textWidget, 3, 2, 5, 1)
         # mainWidget.setLayout(mainGrid)
 
         mainWidget.setGeometry(80, 100, 700, 550)
-        self.setCentralWidget(mainWidget)
-
-        if (self.dynamicButton.isChecked):
-            self.editDynamicButton.show()
-
+        self.setCentralWidget(mainWidget)		
+		
+        if(self.dynamicButton.isChecked):
+            self.editDynamicButton.show()							
+													
+									
+		
+        self.showMaximized()
+		
         self.show()
 
-    # Utility for aloowing listeners to be set to functions on other classes without pyqt slots
+    #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
     def setListener(self, button, function):
         button.clicked.connect(function)
 
-    # opens directory filled with students zipped assignments
+		
+    #opens directory filled with students zipped assignments
     def openDirectory(self):
-
+	
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self, "Please select an Input Directory", options=options)
-        ofileName = QFileDialog.getExistingDirectory(self, "Please Select an Output Directory", options=options)
-
-        # check if temp folder is created, if yes replace with new one
-        # NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-        # PermissionError exception fixes this issue
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select an Input Directory", options=options)
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
+        
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue           
 
         if (ifileName and ofileName):
             try:
@@ -219,33 +240,34 @@ class App(QMainWindow):
                     os.mkdir(ofileName + "/studentWork")
                 except PermissionError:
                     print("studentWork folder is in use")
-                    QMessageBox.about(self, "Attention", "unzip failed")
-                    return
-
-                    # for each zip folder unzip the folder
+                    QMessageBox.about(self , "Attention" , "unzip failed") 
+                    return 
+        
+            #for each zip folder unzip the folder
             for filename in os.listdir(ifileName):
-                if (filename.endswith(".zip")):
-                    zipfileName = re.search('[^/]+$', filename)
-                    zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                    if(filename.endswith(".zip")):
 
-                    with ZipFile(ifileName + "/" + filename, 'r') as zippedObject:
-                        zippedObject.extractall(zipfileNameParse)
-
-                    # file is moved to temp once zip file is extracted into its own filename
-                    os.rename(zipfileNameParse, ofileName + "/studentWork/" + zipfileNameParse)
+                        zipfileName = re.search('[^/]+$', filename)
+                        zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
+                        
+                        with ZipFile(ifileName + "/" + filename , 'r') as zippedObject:
+                            zippedObject.extractall(zipfileNameParse)
+                        
+                        #file is moved to temp once zip file is extracted into its own filename			
+                        os.rename(zipfileNameParse, ofileName +"/studentWork/" + zipfileNameParse)
         else:
             pass
-
-    # opens zipped directory filled with students zipped assignments
+                    
+			
+    #opens zipped directory filled with students zipped assignments
     def openFileNamesDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        files, _ = QFileDialog.getOpenFileNames(self, "Please Select a Zip File(s)", "", "Zip Files (*.zip *.7zip)",
-                                                options=options)
-        ofileName = QFileDialog.getExistingDirectory(self, "Please Select an Output Directory", options=options)
-        # check if temp folder is created, if yes replace with new one
-        # NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-        # PermissionError exception fixes this issue
+        files, _ = QFileDialog.getOpenFileNames(self,"Please Select a Zip File(s)", "","Zip Files (*.zip *.7zip)", options=options)
+        ofileName = QFileDialog.getExistingDirectory(self,"Please Select an Output Directory", options=options)
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
 
         if (files and ofileName):
             try:
@@ -256,17 +278,18 @@ class App(QMainWindow):
                     os.mkdir(ofileName + "/studentWork")
                 except PermissionError:
                     print("studentWork folder is in use")
-                    QMessageBox.about(self, "Attention", "unzip failed")
-                    return
-
-                    # for each zip folder unzip the folder
+                    QMessageBox.about(self , "Attention" , "unzip failed") 
+                    return 
+                    
+            #for each zip folder unzip the folder
             for file in files:
+
                 zipfileName = re.search('[^/]+$', file)
                 zipfileNameParse = os.path.splitext(os.path.basename(zipfileName.group(0)))[0]
-                with ZipFile(file, 'r') as zippedObject:
+                with ZipFile(file , 'r') as zippedObject:
                     zippedObject.extractall(zipfileNameParse)
-
-                # file is moved to temp once zip file is extracted into its own filename
+                
+                #file is moved to temp once zip file is extracted into its own filename			
                 os.rename(zipfileNameParse, ofileName + "/studentWork/" + zipfileNameParse)
         else:
             pass
@@ -274,12 +297,11 @@ class App(QMainWindow):
     def openKeyDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getOpenFileName(self, "Please Select a Key File", "", "Key Files (*py)",
-                                                options=options)
-        # check if temp folder is created, if yes replace with new one
-        # NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-        # PermissionError exception fixes this issue
-
+        ifileName = QFileDialog.getOpenFileName(self,"Please Select a Key File", "","Key Files (*py)", options=options)
+		#check if temp folder is created, if yes replace with new one
+		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
+		#PermissionError exception fixes this issue
+        
         if (ifileName[0] != ""):
             self.dragdrop.setText(ifileName[0])
             copy2(ifileName[0], KEY_DIR_PATH)
@@ -298,9 +320,13 @@ class App(QMainWindow):
 
     @pyqtSlot()
     def grade_on_click(self):
+        #clear log before grading
+        self.resultArea.clear()
+        
+        #access directory to grade
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        ifileName = QFileDialog.getExistingDirectory(self, "Please select a Directory to Grade", options=options)
+        ifileName = QFileDialog.getExistingDirectory(self,"Please select a Directory to Grade", options=options)
         STUDENTWORKSOURCE = ifileName
 
         # this code produces an output txt file that is named the dir chosen and also time stamped
@@ -309,7 +335,7 @@ class App(QMainWindow):
         resultFileName = resultFileName[index:]  # Substring after last /
         localtime = time.asctime(time.localtime(time.time()))
         localtime = localtime.replace(":", "")
-        resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName + "" + localtime + '.txt')
+        resultsPath = os.path.join(AUTOGRADER_PATH, 'results', resultFileName +""+ localtime + '.txt')
         f = open(resultsPath, "w+")
 
         # This is where we would start a stream or keep using f.write() to put results
@@ -319,36 +345,69 @@ class App(QMainWindow):
         f.write("I'm putting stuff in the log")
         f.close()
 
-        print("\nGrading Directory:", STUDENTWORKSOURCE, file=self.resultArea)
+        #grade assignments based on comment count docstring availability  
+        #perform dynamic analysis if button is toggled
+
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
-        print("Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
+        print("-> Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
-            print("Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
+            print("-> Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
+            print("-> End Key Output:\n", file=self.resultArea)
             key_output_tokens = self.dnt.key_output.split()
+            
+            print("\n=========================== Grading Directory:", STUDENTWORKSOURCE + " ===========================", file=self.resultArea)
+            print("-> Beginning Analysis", file=self.resultArea)    
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
-                    for student_file in os.listdir(os.path.join(root, student_dir)):
-                        filename = os.path.join(root, student_dir, student_file)
-                        if not re.match(".*\.py.*", student_file) is None:
-                            print("Analyzing:\n\t", os.path.join(root, student_dir, student_file), file=self.resultArea)
-                            try:
-                                self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
-                                output_tokens = self.dnt.captured_output.split()
-                                print("Output:\n", self.dnt.captured_output, sep="", file=self.resultArea)
-                                points_awarded = 0
-                                for i in range(len(output_tokens)):
-                                    if (output_tokens[i] == key_output_tokens[i]):
-                                        points_awarded = points_awarded + 1
-                                print("Grade:\n", points_awarded, "/", len(key_output_tokens), sep="",
-                                      file=self.resultArea)
-                            except BaseException as e:
-                                print(e)
-                                print("Could not analyze:\n\t", student_dir, file=self.resultArea)
-                        print(student_file)
-            print("Done analyzing")  # TODO: print out to log
+                    #do not open __pycache__ folders
+                    if(student_dir != "__pycache__"): 
+                        print("\n\n============================================ student: " + student_dir + " ================================================", file=self.resultArea)
+                        for student_file in os.listdir(os.path.join(root, student_dir)):
+                            filename = os.path.join(root, student_dir, student_file)
+                            
+                            #only grade .py files
+                            if not re.match(".*\.py.*", student_file) is None:
+                                
+                                
+                                
+                                print("\n\n---------------------------------- file: " + student_file + " --------------------------------", file=self.resultArea)
+                        
+                                #comment count toggled
+                                if(self.commentButton.isChecked()):
+                                    comment = CommentSummary(filename, ['Count Comments'])
+                                    print(" -> " + comment.run(), file=self.resultArea)
+                                
+                                #docstring count toggled
+                                if(self.docCountButton.isChecked()):
+                                    comment = CommentSummary(filename, ['Count Docstring'])
+                                    print(" -> " + comment.run(), file=self.resultArea)
+                                
+                                #display docstring toggled
+                                if(self.docstringButton.isChecked()):
+                                    comment = CommentSummary(filename, ['Display Docstring'])
+                                    print(comment.run(), file=self.resultArea)
+              
+                                #run dynamic analysis if button is toggled
+                                if(self.dynamicButton.isChecked()):
+                                    try:
+                                        self.dnt.analyze_dynamically(os.path.join(root, student_dir, student_file))
+                                        output_tokens = self.dnt.captured_output.split()
+                                        print("-> Dynamic Analysis:", file=self.resultArea)
+                                        print("    -> Output:\n", self.dnt.captured_output, sep="", file=self.resultArea)
+                                        points_awarded = 0
+                                        for i in range(len(output_tokens)):
+                                            if(output_tokens[i] == key_output_tokens[i]):
+                                                points_awarded = points_awarded + 1 
+                                        print("    -> Grade: ", points_awarded, "/", len(key_output_tokens), sep="", file=self.resultArea)
+                                    except BaseException as e:
+                                        print(e)
+                                        print("    -> Could not analyze:\n\t", student_dir, file=self.resultArea)
+            print("=================================================================================================================================================" , file=self.resultArea)      
+            print("-> Analysis Complete", file=self.resultArea)                                                                 
 
     @pyqtSlot()
+    
     @pyqtSlot()
     def zipdialog_on_click(self):
         self.openFileNamesDialog()
@@ -380,7 +439,7 @@ class App(QMainWindow):
         for filename in os.listdir(folder):
             file_path = os.path.join(folder, filename)
             try:
-                if re.match(".*\.gitkeep.*", filename):
+                if re.match(".*\.gitkeep.*",filename):
                     pass
                 elif os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)
@@ -389,7 +448,6 @@ class App(QMainWindow):
             except Exception as e:
                 print('Failed to delete %s. Reason: %s' % (file_path, e))
         qApp.quit()
-
 
 class KeyDrop(QLabel):
 
@@ -403,7 +461,7 @@ class KeyDrop(QLabel):
             event.accept()
         else:
             event.ignore()
-
+    
     def dropEvent(self, event):
         for url in event.mimeData().urls():
             path = url.toLocalFile()
@@ -417,7 +475,6 @@ class KeyDrop(QLabel):
                 shutil.rmtree(dirname)
                 os.mkdir(dirname)
                 copy2(path, dirname)
-
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
