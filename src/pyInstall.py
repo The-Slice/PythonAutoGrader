@@ -1,13 +1,16 @@
-import ctypes
 import os
+import sys
+import subprocess
+SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
+REPOROOT = os.path.dirname(SRCROOT)
+subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "config\\pyreqs.txt")]);
+import ctypes
 import re
 import shutil
-import sys
 import time
 from zipfile import ZipFile
 from shutil import copy2
 from shutil import copy
-import subprocess
 import pip
 import winshell
 import pyshortcuts
@@ -17,9 +20,6 @@ from PyQt5.QtWidgets import *
 import PyInstaller.__main__
 import PyInstaller.config
 
-SRCROOT = os.path.dirname(os.path.realpath(sys.argv[0]))
-REPOROOT = os.path.dirname(SRCROOT)
-subprocess.run(["python", "-m", "pip", "install", "-r", os.path.join(REPOROOT, "config\\pyreqs.txt")]);
 
 
 class MyWindow(QMainWindow):
