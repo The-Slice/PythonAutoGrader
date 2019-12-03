@@ -99,6 +99,8 @@ class Tester():
                                                                          output_path="$output_path",
                                                                          assignment_instance_name="$assignment_instance_name",
                                                                          assignment_instance="$assignment_instance")  # substitute key fields
+
+    def analyze_grading_key(self):
         self.analyze_dynamically(self.grading_key)
         self.key_output = self.captured_output
         self.captured_output = ""

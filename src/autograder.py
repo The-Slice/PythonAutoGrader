@@ -351,6 +351,7 @@ class App(QMainWindow):
 
         keyFileName = os.path.basename(self.dragdrop.text())
         CURRENT_GRADING_KEY_PATH = os.path.join(KEY_DIR_PATH, keyFileName)
+        self.dnt.analyze_grading_key()
         print("-> Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=self.resultArea)
         if not STUDENTWORKSOURCE is None and not CURRENT_GRADING_KEY_PATH is None:
             print("-> Using Grading Key: ", CURRENT_GRADING_KEY_PATH, file=f)
