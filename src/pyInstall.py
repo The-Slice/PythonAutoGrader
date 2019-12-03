@@ -47,9 +47,9 @@ class MyWindow(QMainWindow):
         self.startbar.setChecked(True)
 
         layout = QVBoxLayout()
-        layout.addWidget(self.buildButton)
-        layout.addWidget(self.resultArea)
         layout.addWidget(self.browseButton)
+        layout.addWidget(self.resultArea)
+        layout.addWidget(self.buildButton)
         layout.addWidget(self.desktopShortcut)
         layout.addWidget(self.startbar)
 
@@ -103,7 +103,7 @@ class MyWindow(QMainWindow):
             try:
                 PyInstaller.__main__.run(args)
             except:
-                QMessageBox.question(self, 'Install unsuccessful', "Try picking a new install location", QMessageBox.Ok)
+                QMessageBox.question(self, 'Installation Unsuccessful', "Try picking a new install location", QMessageBox.Ok)
                 app.exit()
         self.appendPlainText("done", end='')
         try:
@@ -130,7 +130,7 @@ class MyWindow(QMainWindow):
             desktop=self.desktopShortcut.isChecked(),
             startmenu=self.startbar.isChecked()
         )
-        resp = QMessageBox.question(self, 'Install successful', "You may new exit the program", QMessageBox.Ok)
+        resp = QMessageBox.question(self, 'Installation Successful', "You may now exit the program", QMessageBox.Ok)
         app.quit()
 
     def openDirectory(self):
