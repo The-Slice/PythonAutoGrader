@@ -42,35 +42,6 @@ class App(QMainWindow):
 
         self.initUI()
 
-        # self.testSuiteDict = {
-            # 'Comment Analysis': True,
-            # 'Dynamic Analysis': False
-        # }
-
-        # self.optionBoxes = TestConfigOptionBox(BORDERSIZE, DROPDOWN_LOC, self)
-        # self.optionBoxes.add('Comment Analysis', 
-            # { 
-                # 'Display Docstring': False,
-                # 'Count Comments': False
-                #'Display Comments': True 
-            # }
-        # )
-        # self.optionBoxes.add('Dynamic Analysis',  
-            # { # Format for adding buttons and other components to dropdown
-              #'Button label' : [Constructor for component, component height, component width, listener]
-                # 'Edit Key': [QPushButton, 80, 20, self.openDirectory] 
-            # }
-        # )
-        # for opt in self.optionBoxes.children:
-            # opt.dropdown.clicked.connect(opt.getExpandListener())
-			
-			
-        
-
-
-			
-		
-
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
@@ -95,11 +66,7 @@ class App(QMainWindow):
         self.editDynamicButton.repaint()
         self.editDynamicButton.clicked.connect(self.editkey_on_click)
         self.repaint()
-		
-		
-		
-		
-        
+
         self.resultArea = QOutputLog(self)
 
         #  exitAct = QAction(QIcon('exit.png'), '&Exit', self)
@@ -131,18 +98,6 @@ class App(QMainWindow):
         fileMenu.addAction(openKey)
         fileMenu.addAction(exitAct)
 
-		
-        
-        
-
-
-
-        # text result area
-        #self.resultArea.resize(self.width*0.75, self.height*0.75)
-
-        # attempt to use pyqt auto element resizing
-        #self.resultArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
         print("Log of program status displayed below:\n", file=self.resultArea)
         #self.resultArea.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE)
 
@@ -152,32 +107,16 @@ class App(QMainWindow):
         toggleLabel = QLabel('Toggle:', self)
         lineLabel = QLabel('_________________', self)
 
-        # labelA.adjustSize()
-        # labelA.move(self.width/4-BORDERSIZE, self.height-self.resultArea.height()-BORDERSIZE*4)
-
         gradeButton = QPushButton("Grade", self)
         gradeButton.clicked.connect(self.grade_on_click)
-        # need to connect this button to grade_button_click function
         # if you want a gui element to exist in the scope of the program it must be declared as self
-
 
         self.dragdrop = KeyDrop('Drop key here or open with tools', self)
 
-        # addKeyButton = QPushButton("Add key", self)
-        # addKeyButton.move(self.width/4-BORDERSIZE+labelA.width()+self.dragdrop.width()+5+BORDERSIZE, self.height-self.resultArea.height()-self.dragdrop.height()-BORDERSIZE-15)
-        # addKeyButton.clicked.connect(self.keydialog_on_click)
-        
         mainWidget = QWidget()
         keyWidget = QWidget()
         textWidget = QWidget()
-		
-		#key layout
-        # keyGrid = QGridLayout()
-        # keyGrid.addWidget(labelFill,0,1)
-        # keyGrid.addWidget(labelA,0,2)
-        # keyGrid.addWidget(self.dragdrop,0,3)
-        # keyWidget.setLayout(keyGrid)
-		
+
 		#main layout
         grid = QGridLayout()
         #grid.addWidget(self.optionBoxes, 0,0)
@@ -207,18 +146,14 @@ class App(QMainWindow):
 		
         if(self.dynamicButton.isChecked):
             self.editDynamicButton.show()							
-													
-									
-		
+
         self.showMaximized()
-		
         self.show()
 
     #Utility for aloowing listeners to be set to functions on other classes without pyqt slots
     def setListener(self, button, function):
         button.clicked.connect(function)
 
-		
     #opens directory filled with students zipped assignments
     def openDirectory(self):
 	
@@ -229,8 +164,7 @@ class App(QMainWindow):
         
 		#check if temp folder is created, if yes replace with new one
 		#NOTE: crashes if file explorer is running in the background and is currently inside 'temp' directory
-		#PermissionError exception fixes this issue           
-
+		#PermissionError exception fixes this issue
         if (ifileName and ofileName):
             try:
                 os.mkdir(ofileName + "/studentWork")
@@ -359,13 +293,13 @@ class App(QMainWindow):
             print("-> Grading Key Output:\n", self.dnt.key_output, sep="", file=self.resultArea)
             print("-> End Key Output:\n", file=self.resultArea)
             key_output_tokens = self.dnt.key_output.split()
-            print("\n=========================== Grading Directory:", STUDENTWORKSOURCE + " ===========================", file=self.resultArea)
+            print("\n=============== Grading Directory:", STUDENTWORKSOURCE + " ===============", file=self.resultArea)
             print("-> Beginning Analysis", file=self.resultArea)    
             for root, dirs, files in os.walk(STUDENTWORKSOURCE):
                 for student_dir in dirs:
                     #do not open __pycache__ folders
                     if(student_dir != "__pycache__"): 
-                        print("\n\n============================================ student: " + student_dir + " ================================================", file=self.resultArea)
+                        print("\n\n=============== student: " + student_dir + " ===============", file=self.resultArea)
                         for student_file in os.listdir(os.path.join(root, student_dir)):
                             filename = os.path.join(root, student_dir, student_file)
                             #only grade .py files
@@ -407,7 +341,7 @@ class App(QMainWindow):
                                     except BaseException as e:
                                         print(e)
                                         print("    -> Could not analyze:\n\t", student_dir, file=self.resultArea)
-            print("=================================================================================================================================================" , file=self.resultArea)      
+            print("===========================================================================" , file=self.resultArea)
             print("-> Analysis Complete", file=self.resultArea)                                                                 
         f.close()
 
