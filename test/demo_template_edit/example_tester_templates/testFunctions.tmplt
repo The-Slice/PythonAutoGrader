@@ -1,0 +1,39 @@
+
+import runpy
+import unittest
+import subprocess
+import sys
+
+
+try:
+    from $assignment_instance_name import *
+except:
+    print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO INTERPRET")
+    
+class DynamicAnalysis(unittest.TestCase):
+    
+    def setUp(self):
+        pass
+    
+    def test_main(self):
+        GLOBALS = {} # This is a dictionary for passing global variables to the program
+        try:
+            print("Hello")
+        except:
+            print("ASSIGNMENT INSTANCE:", r"$assignment_instance", "FAILED TO COMPLETE")
+
+    def test_mult(self):
+        if mult(2, 2) == 4:
+            print("$assignment_instance_name", "mult test passed")
+        else:
+            print("$assignment_instance_name", "mult test failed") 
+
+    def test_add(self):
+        if add(3, 3) == 6:
+            print("$assignment_instance_name", "add test passed")
+        else:
+            print("$assignment_instance_name", "add test failed")
+
+
+    def tearDown(self):
+        pass
